@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pi & Friends Web Suite</title>
+    <style>
+        body {
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            background: #1a1b26;
+            color: #a9b1d6;
+            overflow: hidden; /* Prevents the whole page from scrolling */
+        }
+
+        #sidebar {
+            width: 350px;
+            min-width: 350px; /* Prevents sidebar from shrinking */
+            padding: 20px;
+            border-right: 1px solid #414868;
+            overflow-y: auto;
+            z-index: 10; /* Keeps buttons on top */
+        <button class="btn" style="background: #f7768e; color: white;" onclick="stopCurrent()">Stop/Clear Calculation</button>
+        }
+
+        #output {
+            flex-grow: 1;
+            background: #0f111a; /* Deeper black for better contrast */
+            padding: 25px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 13px; /* Slightly smaller for 32-inch density */
+            line-height: 1.5;
+            color: #89ddff; /* Cyan-tinted text for readability */
+            overflow-y: auto;
+            overflow-x: hidden;
+
+            white-space: pre-wrap;
+            word-break: break-all;
+            border-radius: 4px;
+            border: 1px solid #32344a;
+        }
+    </style>
+</head>
+<body>
+<div id="sidebar">
+    <h3>Pi Methods</h3>
+    <button class="btn" style="background: #ff9e64;" onclick="start('archimedes')">Archimedes Method</button>
+    <button class="btn" style="background: #7aa2f7;" onclick="start('montecarlo')">Monte Carlo</button>
+
+    <h3>Roots Demo</h3>
+    <input type="number" id="radical" placeholder="Radical (2 or 3)" style="width: 45%;">
+    <input type="number" id="workpiece" placeholder="Workpiece" style="width: 45%;">
+    <button class="btn" style="background: #e0af68; margin-top: 10px;" onclick="startRoots()">Run Roots Calculation</button>
+</div>
+<div id="console">
+    <div id="output">System initialized. Select a method to begin...</div>
+</div>
+
+<script>
+    function start(method) {
+        const out = document.getElementById('output');
+        out.innerText = "Connecting to engine...\n";
+
+        const es = new EventSource(`/run?method=${method}`);
+
+        es.onmessage = (e) => {
+            // Append the new data
+            out.innerText += e.data + "\n";
+
+            // This is the fix: Force the scroll to the bottom
+            out.scrollTop = out.scrollHeight;
+        };
+
+        es.onerror = () => {
+            out.innerText += "\n[Calculation Finished or Connection Closed]\n";
+            es.close();
+        };
+    }
+
+    function startRoots() {
+        const rad = document.getElementById('radical').value;
+        const work = document.getElementById('workpiece').value;
+        // Similar to start() but passes rad and work in URL
+    }
+    function stopCurrent() {
+        if (currentEventSource) {
+            currentEventSource.close();
+            currentEventSource = null;
+        }
+        document.getElementById('output').innerText = "System Ready.";
+    }
+</script>
+</body>
+</html>
