@@ -65,6 +65,20 @@ func formatInt64WithThousandSeparators(num int64) string {
 	}
 	return prefix + result
 }
+/*
+// Gemini suggested this on Saturday April 11 2026 @ 05:37AM
+func formatFloat64WithThousandSeparators(n float64) string {
+    s := fmt.Sprintf("%.0f", n)
+    res := ""
+    for i, char := range s {
+        if i > 0 && (len(s)-i)%3 == 0 {
+            res += ","
+        }
+        res += string(char)
+    }
+    return res
+}
+ */
 
 
 func formatFloat64WithThousandSeparators(numFloat64 float64) string {

@@ -7,18 +7,14 @@ import (
 	"time"
 )
 
-func Gauss_Legendre() {
-	about := `
-	The Gauss-Legendre algorithm is an iterative method to compute π
-	based on the arithmetic-geometric mean (AGM) of two numbers. It was developed by Carl Friedrich Gauss and later refined by Adrien-Marie Legendre.
-	Unlike the Wallis product (a slow-converging product) or Gregory-Leibniz (a slow-converging series), Gauss-Legendre converges quadratically, meaning the
-	number of correct digits roughly doubles with each iteration—making it highly efficient for high-precision calculations.
+func Gauss_Legendre(webPrint func(string)) {
+	webPrint("The Gauss-Legendre algorithm is an iterative method to compute π")
+	webPrint("based on the arithmetic-geometric mean (AGM) of two numbers. It was developed by Carl Friedrich Gauss and later refined by Adrien-Marie Legendre.")
+	webPrint("Unlike the Wallis product (a slow-converging product) or Gregory-Leibniz (a slow-converging series), Gauss-Legendre converges quadratically, meaning the")
+	webPrint("number of correct digits roughly doubles with each iteration—making it highly efficient for high-precision calculations.")
 
-	Convergence: The values a and b approach the same limit (the AGM), and t sub n adjusts to refine the estimate. 
-	The quadratic convergence comes from the squaring in the error terms.
-
-`
-	fmt.Sprintf(about)
+	webPrint("Convergence: The values a and b approach the same limit (the AGM), and t sub n adjusts to refine the estimate.")
+	webPrint("The quadratic convergence comes from the squaring in the error terms.")
 
 	usingBigFloats = false
 	start := time.Now()
@@ -62,18 +58,18 @@ func Gauss_Legendre() {
 		select {
 		default:
 			// above 'range' seems to tell the for to "range" accross pin and assign a successive element to 'value', there were 4 elements, so it runs 4 times -- the _ catches the unneeded return from 'range' which starts at 0 and goes to 3 in this loop
-			fmt.Sprintf("pin is %.16f, and ... ", pin)            // pin is an aray of calculated values for Pi  // Rick's code to discover same
-			fmt.Sprintf("%.16f Was calculated herewith\n", value) // 'value' created on prior 'for' line and is set 4 times to a successive element of pin
-			Ricks_value = value                                   // Rick's code to grab that final 'value' from last iteration
+			webPrint(fmt.Sprintf("pin is %.16f, and ... ", pin))            // pin is an aray of calculated values for Pi  // Rick's code to discover same
+			webPrint(fmt.Sprintf("%.16f Was calculated herewith\n", value)) // 'value' created on prior 'for' line and is set 4 times to a successive element of pin
+			Ricks_value = value                                             // Rick's code to grab that final 'value' from last iteration
 			// fmt.Printf("\n\nTop underscore is %d \n\n", exterior_catcher) it starts at 0 and goes to 3
 
 		}
 	}
-	// fmt.Sprintf(Ricks_value)) // Rick's code
+	// webPrint(fmt.Sprintf(Ricks_value)) // Rick's code
 	// fmt.Printf("\n\nBottom underscore is %d \n\n", exterior_catcher) this exterior_catcher var is never touched by the for loop
-	fmt.Sprintf("3.1415926535897932 <-- compared to the actual value of Pi")
-	fmt.Sprintf("1 23456789012345 counting to fifteen \n")
-	fmt.Sprintf("   ... via the Gauss–Legendre algorithm ... \n")
+	webPrint("3.1415926535897932 <-- compared to the actual value of Pi")
+	webPrint("1 23456789012345 counting to fifteen \n")
+	webPrint("   ... via the Gauss–Legendre algorithm ... \n")
 
 	piAsBF := new(big.Float)
 	piAsBF = big.NewFloat(Ricks_value) // pi is being cast to big from float64
@@ -82,7 +78,7 @@ func Gauss_Legendre() {
 	elapsed := t.Sub(start)
 	TotalRun := elapsed.String() // cast time durations to a String type for Fprintf "formatted print"
 
-	fmt.Sprintf("Pi is %0.9f, and run was %s\n", piAsBF, TotalRun)
+	webPrint(fmt.Sprintf("Pi is %0.9f, and run was %s\n", piAsBF, TotalRun))
 	// printResultStatsLong(piAsBF, 0, "Gauss–Legendre", iters, TotalRun, selection)
 }
 
@@ -114,3 +110,37 @@ func pi(an, bn, tn, pin []float64) []float64 { // this func is all about appendi
 	return pin
 	// adapted by Richard Woolley
 } // End of Gauss_Legendre Set // case 37: // -- AMFGauss_LegendreB
+
+/*
+//Gemini suggested this on Saturday April 11 2026 @ 05:49AM
+func Gauss_Legendre(webPrint func(string)) {
+    webPrint("Initializing Gauss-Legendre algorithm...")
+
+    // Set precision high enough for the iterative power
+    prec := uint(1024)
+    a := big.NewFloat(1).SetPrec(prec)
+    b := new(big.Float).SetPrec(prec).Quo(big.NewFloat(1), new(big.Float).Sqrt(big.NewFloat(2)))
+    t := big.NewFloat(0.25).SetPrec(prec)
+    p := big.NewFloat(1).SetPrec(prec)
+
+    for i := 1; i <= 5; i++ { // Even 5 iterations give massive precision
+        a_next := new(big.Float).SetPrec(prec).Add(a, b).Quo(new(big.Float).Add(a, b), big.NewFloat(2))
+        // b = sqrt(a * b)
+        b_next := new(big.Float).SetPrec(prec).Sqrt(new(big.Float).Mul(a, b))
+
+        // t = t - p * (a - a_next)^2
+        diff := new(big.Float).Sub(a, a_next)
+        t.Sub(t, new(big.Float).Mul(p, new(big.Float).Mul(diff, diff)))
+
+        a, b = a_next, b_next
+        p.Mul(p, big.NewFloat(2))
+
+        // Calculate current Pi estimate: (a + b)^2 / (4 * t)
+        sumAB := new(big.Float).Add(a, b)
+        pi := new(big.Float).Quo(new(big.Float).Mul(sumAB, sumAB), new(big.Float).Mul(big.NewFloat(4), t))
+
+        webPrint(fmt.Sprintf("Iteration %d Pi: %s", i, pi.Text('f', 100)))
+    }
+    webPrint("Gauss-Legendre calculation complete.")
+}
+*/

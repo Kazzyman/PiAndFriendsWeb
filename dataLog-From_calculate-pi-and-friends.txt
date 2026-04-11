@@ -10,4 +10,4 @@ was run on: Fri Apr 10 22:38:56 2026
 23314.43 was Iterations/Seconds 
 999 was total Iterations 
 Total run was 42.849ms 
- 
+   -- Gottfried Wilhelm Leibniz --  on Mac-mini.local was run on: Sat Apr 11 06:00:57 20262157870384 was Lines/Second  1.541336e+08 was Iterations/Seconds  4.000000e+09 was total Iterations  Total runTime was 25.951512375s 

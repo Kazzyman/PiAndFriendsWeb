@@ -63,47 +63,80 @@
     <h3>Roots Demo</h3>
         <input type="number" id="radical" value="2">
     <input type="number" id="workpiece" value="49">
-    <button class="btn" style="background: #e0af68; color: #1a1b26; margin-top: 10px;" onclick="startRoots()">Run Roots Calculation</button>
+    <button class="btn" style="background: #e0af68; color: #1a1b26; margin-top: 10px;" onclick="startRoots()">Square and Cube Roots Calculation</button>
 
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
     <h3>  - - - Pi Methods: - - - </h3>
     
-    <button class="btn" style="background: #ff9e64; color: #1a1b26;" onclick="start('archimedes')">Archimedes Method</button>
+    <button class="btn" style="background: #ff9e64; color: #1a1b26;" onclick="start('archimedes')">Archimedes Method<br>Archimedes method for finding π, improved by Richard Woolley, 
+        easy to understand geometric method using big.Float variables 
+        produces 3,012 digits of delicious Pi in under a minute, from way back in 230 BCE 
+        <br>-*-*-*- Rick's personal favorite -*-*-*-</button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
     <div class="input-group">
         <label>BBP Digits:</label>
         <input type="number" id="bbpDigits" value="1000">
     </div>
-    <button class="btn" onclick="runBBP()">Run BBP Fast 44</button>
+    <button class="btn" onclick="runBBP()">Bailey–Borwein–Plouffe (BBP)<br>revolutionized computational mathematics when it was discovered in 1995 by David H. Bailey, Peter Borwein and Simon Plouffe
+    <br>calculates any specific digit of π in hexadecimal without knowing the digits that preceded it. Uses an integer relation algorithm (PSLQ). It was a "computer-first" discovery that stunned mathematicians. 
+        <div class="formula-title">.</div>
+        <div class="math-display">
+            &pi; = &sum; <span class="sub-sup"><sup>&infin;</sup><sub>k=0</sub></span>
+            [ 1/16<sup>k</sup> ( 4/8k+1 - 2/8k+4 - 1/8k+5 - 1/8k+6 ) ]
+        </div></button>
+
+   
+    
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
     <div class="input-group">
         <label>Monty Grid Size:</label>
         <input type="number" id="gridSize" value="5000">
     </div>
-    <button class="btn" style="background: #7aa2f7; color: #1a1b26;" onclick="start('monte')">Run Monte Carlo</button>
+    <button class="btn" style="background: #7aa2f7; color: #1a1b26;" onclick="start('monte')">Run Monte Carlo<br>big floats, & float64 
+        Flavor: no fancy equations are used, only Go's pure randomness, 4 digits of pi in 21s; 7 digits possible in 1h30m with a 119k grid
+        <br>-*-*- Rick's second-favorite method -*-*-</button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
     <div class="input-group">
         <label>Chudnovsky Digits:</label>
         <input type="number" id="chudDigits" value="1000">
     </div>
-    <button class="btn" onclick="runChudnovsky()">Run Chudnovsky</button>
+    <button class="btn" onclick="runChudnovsky()">Run Chudnovsky<br>by David & Gregory Chudnovsky, late 1980s, 
+        extremely efficient, quickly bakes world-record quantities of Pi 
+        this algorithm is a rapidly converging infinite series which 
+        leverages properties of j-invariant from elliptic function theory</button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
+    <button class="btn" style="background: #9ece6a; color: #1a1b26;" onclick="start('customseries')">Custom Series <br> I don&apos;t remember 
+        where it&apos;s from ... <br>but it is very quick, 4s gets us 9 digits of Pi<br>π = (4/1) - (4/3) + (4/5) - (4/7) + (4/9) - (4/11) + (4/13) - (4/15)</button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
+
+    <button class="btn" style="background: #4fd1c5; color: #1a1b26;" onclick="start('gauss')">Gauss-Legendre<br>C F Gauss, refined by Adrien-Marie Legendre<br>
+        π ≈ (aₙ + bₙ)² / (4 tₙ)<br>only manages to do 10 digits of Pi in well-over five minutes, an infinite series circa 1655<br>--- served here by Rick Woolley ---</button>
+    <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
+
+    <button class="btn" style="background: #bb9af7; color: #1a1b26;" onclick="start('gregory')">Gregory-Leibniz: runs 20sec <br> gives 10 digits of Pi" +
+        "James Gregory 1638–1675  Gottfried Wilhelm Leibniz 1646-1716 <br> π = 4 * ( 1 - 1/3 + 1/5 - 1/7 + 1/9 ...) "</button>
+    <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
+
     
+    
+    
+    <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
     <button class="btn" style="background: #f7768e; color: white;" onclick="stopCurrent()">Stop/Clear Calculation</button>
+    <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
+
 </div>
 
 <div id="console">
     <div id="status" style="padding: 10px 25px 0 25px; color: #7aa2f7; font-size: 12px; font-style: italic;">
         System Ready.
     </div>
-    <div id="output">Select a method to begin...</div>
+    <div id="output">By Richard (Rick) Woolley. <br>Select a method from the panel on the left to begin...</div>
 </div>
 
 <script>

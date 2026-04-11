@@ -83,6 +83,20 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 			chudnovskyBig(func(s string) {
 				outputChan <- s
 			}, digits, done)
+		case "customseries":
+			CustomSeries(func(s string) {
+				outputChan <- s
+			})
+		case "gauss":
+			Gauss_Legendre(func(s string) {
+				outputChan <- s
+			})
+			// main.go - inside the switch method block
+		case "gregory":
+			// Matches: func(webPrint, done)
+			GregoryLeibniz(func(s string) {
+				outputChan <- s
+			}, done)
 		default:
 			outputChan <- "Unknown method requested."
 		}
