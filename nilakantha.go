@@ -10,27 +10,27 @@ import (
 
 // @formatter:off
 
-func NilakanthaBig(iters int, precision int, done chan bool) { // Changed signature ::: - -
+func NilakanthaBig(iters int, precision int, done chan bool, webPrint func(string2 string)) { // Changed signature ::: - -
 var printThisThen string
 var printThis []string
 var lenOfPi int
 
-	fmt.Sprintf("\n... working ...\n")
+	webPrint("... working ...")
 
 	if iters > 36111222 {
-		fmt.Sprintf("\n... working ... Nilakantha using big floats")
+		webPrint("... working ... Nilakantha using big floats")
 	}
 	if iters > 42000000 {
-		fmt.Sprintf("\n... werkin ...")
+		webPrint("... werkin ...")
 	}
 	if iters > 55111222 {
-		fmt.Sprintf("\n... working for a while ...")
+		webPrint("... working for a while ...")
 	}
 	if iters > 69111222 {
-		fmt.Sprintf("\n... will be working for quite a while ...")
+		webPrint("... will be working for quite a while ...")
 	}
 	if iters > 80111222 {
-		fmt.Sprintf("\n... a very long while ... working ...\n")
+		webPrint("... a very long while ... working ...")
 	}
 
 	start := time.Now()
@@ -110,40 +110,40 @@ var lenOfPi int
 				}
 
 		if iterBig == 20111222 {
-			fmt.Sprintf("\n ... doin some ... ") // Send to channel
+			webPrint(" ... doin some ... ") // Send to channel
 		}
 		if iterBig == 36111222 {
-			fmt.Sprintf("\n ... werkin ... ")
+			webPrint(" ... werkin ... ")
 		}
 		if iterBig == 42000000 {
-			fmt.Sprintf("\n... still werkin ... Nilakantha Somayaji method using big.Float types \n  -- with some patience one can generate 31 correct digits of pi this way.\n")
+			webPrint("... still werkin ... Nilakantha Somayaji method using big.Float types   -- with some patience one can generate 31 correct digits of pi this way.")
 		}
 		if iterBig == 55111222 {
-			fmt.Sprintf("\n... been working for a while ...")
+			webPrint("... been working for a while ...")
 		}
 		if iterBig == 69111222 {
-			fmt.Sprintf("\n... been working for quite a while ...")
+			webPrint("... been working for quite a while ...")
 		}
 		if iterBig == 80111222 {
-			fmt.Sprintf("\n... it's been a very long while ... but still working ...")
+			webPrint("... it's been a very long while ... but still working ...")
 		}
 		if iterBig == 180111222 {
-			fmt.Sprintf("\n... it's been a very long while, 180,111,222 done, ... and still working ...")
+			webPrint("... it's been a very long while, 180,111,222 done, ... and still working ...")
 		}
 		if iterBig == 280111222 {
-			fmt.Sprintf("\n... it's been a very long while, 280,111,222 done, ... and still working ...")
+			webPrint("... it's been a very long while, 280,111,222 done, ... and still working ...")
 		}
 		if iterBig == 480111222 {
-			fmt.Sprintf("\n... it's been a very long while, 480,111,222 done, ... still working ...")
+			webPrint("... it's been a very long while, 480,111,222 done, ... still working ...")
 		}
 		if iterBig == 680111222 {
-			fmt.Sprintf("\n... it's been a very long while, 680,111,222 done, ...  working ...")
+			webPrint("... it's been a very long while, 680,111,222 done, ...  working ...")
 		}
 		if iterBig == 880111222 {
-			fmt.Sprintf("\n... it's been a very long while, done, 880,111,222, done ... still, working ...")
+			webPrint("... it's been a very long while, done, 880,111,222, done ... still, working ...")
 		}
 		if iterBig == 977111222 {
-			fmt.Sprintf("\n... it's been a very long while, 977,111,222 already ... why am I still working? ...")
+			webPrint("... it's been a very long while, 977,111,222 already ... why am I still working? ...")
 		}
 		}
 	} // end of the loop, the only calculating loop
@@ -157,12 +157,12 @@ var lenOfPi int
 
 	if lenOfPi > 55000 { // if length of pi is > 55,000 digits we have something really big
 		// print to ::: screen
-			fmt.Sprintf("\n\n\nWe have been tasked with making a lot of pie and it was sooo big it needed its own file ...\n")
-			fmt.Sprintf("\n\n  After allowing this process to finish (you may have to continue prodding this thing along for a while) ... \n")
-			fmt.Sprintf("... Go have a look in /.big_pie_is_in_here.txt to find all the digits of π you had requested. \n\n")
+			webPrint("We have been tasked with making a lot of pie and it was sooo big it needed its own file ...")
+			webPrint("  After allowing this process to finish (you may have to continue prodding this thing along for a while) ... ")
+			webPrint("... Go have a look in /.big_pie_is_in_here.txt to find all the digits of π you had requested. ")
 
 		// print (log) to a special ::: file
-			_, err2prslc2c := fmt.Fprintf(fileHandleBig, "\nThese are the %d verified digits we have calculated, dumped by rick  :: \n", lenOfPi)
+			_, err2prslc2c := fmt.Fprintf(fileHandleBig, "These are the %d verified digits we have calculated, dumped by rick  :: ", lenOfPi)
 				check(err2prslc2c)
 	
 			_, err8prslc2c := fmt.Fprint(fileHandleBig, printThisThen) // to a file
@@ -174,12 +174,12 @@ var lenOfPi int
 		}
 	} else { 
 
-		fmt.Sprintf("\npi as calculated herein is: %s", printThisThen)
+		webPrint(fmt.Sprintf("pi as calculated herein is: %s", printThisThen))
 
 		floatIterBig := float64(iterBig)
 		printableIterbigWithcommas := formatFloat64WithThousandSeparators(floatIterBig)
 
-		fmt.Sprintf("\n.... we have matched %d digits in %s iterations: ", lenOfPi, printableIterbigWithcommas)
+		webPrint(fmt.Sprintf(".... we have matched %d digits in %s iterations: ", lenOfPi, printableIterbigWithcommas))
 
 		fileHandleNilakan, err1prslc2c := os.OpenFile("dataLog-From_Nilakantha_Method_lengthy_prints.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 		check(err1prslc2c)         // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt  // It’s idiomatic to defer a Close immediately after opening a file.
@@ -190,10 +190,10 @@ var lenOfPi int
 		
 		// print to ::: file
 				_, err2prslc2c := fmt.Fprintf(fileHandleNilakan,
-					"\n\nBelow rick are the %d verified digits we have calculated via Nilakantha using precision of %d and iterations of %d: \n", lenOfPi, precision, iterBig)
+					"Below rick are the %d verified digits we have calculated via Nilakantha using precision of %d and iterations of %d: ", lenOfPi, precision, iterBig)
 						check(err2prslc2c)
 
-		fmt.Sprintf("\nhey, rick, pi as calculated herein is: %s", printThisThen)
+		webPrint(fmt.Sprintf("hey, rick, pi as calculated herein is: %s", printThisThen))
 		
 		_, err8prslc2c := fmt.Fprint(fileHandleNilakan, printThisThen) 
 		check(err8prslc2c)
@@ -208,11 +208,11 @@ var lenOfPi int
 		defer fileHandleDefault.Close()        // It’s idiomatic to defer a Close immediately after opening a file.
 		
 		// to ::: file
-			_, err2prslc2d := fmt.Fprintf(fileHandleDefault, "\nThese are the %d verified digits we have calculated  :: \n", lenOfPi)
+			_, err2prslc2d := fmt.Fprintf(fileHandleDefault, "These are the %d verified digits we have calculated  :: ", lenOfPi)
 				check(err2prslc2d)
 			
 		// to ::: screen
-			fmt.Sprintf("\n These are the %d verified digits we have calculated: \n", lenOfPi)
+			webPrint(fmt.Sprintf(" These are the %d verified digits we have calculated: ", lenOfPi))
 
 		_, err8prslc2c = fmt.Fprint(fileHandleBig, printThisThen) // to a file
 			check(err8prslc2c)
@@ -222,7 +222,7 @@ var lenOfPi int
 					return
 				}
 	}
-	fmt.Sprintf("\n")
+	webPrint("")
 
 	// Open a log file
 		fileHandleDefault, err1 := os.OpenFile("dataLog-From_calculate-pi-and-friends.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
@@ -234,15 +234,15 @@ var lenOfPi int
 	TotalRun = elapsed.String()
 
 	// print to ::: file
-		_, err0 := fmt.Fprintf(fileHandleDefault, "\n  -- Nilakantha Somayaji -- on %s \n", Hostname)
+		_, err0 := fmt.Fprintf(fileHandleDefault, "  -- Nilakantha Somayaji -- on %s ", Hostname)
 		check(err0)
-		_, err6 := fmt.Fprint(fileHandleDefault, "was run on: ", current_time.Format(time.ANSIC), "\n")
+		_, err6 := fmt.Fprint(fileHandleDefault, "was run on: ", current_time.Format(time.ANSIC), "")
 		check(err6)
-		_, err5 := fmt.Fprintf(fileHandleDefault, "%d was total Iterations; %d was precision setting for the big.Float types \n", iterBig, precision)
+		_, err5 := fmt.Fprintf(fileHandleDefault, "%d was total Iterations; %d was precision setting for the big.Float types ", iterBig, precision)
 		check(err5)
-		_, err7 := fmt.Fprintf(fileHandleDefault, "Total run was %s \n ", TotalRun)
+		_, err7 := fmt.Fprintf(fileHandleDefault, "Total run was %s  ", TotalRun)
 		check(err7)
-		_, err2prslc2da := fmt.Fprint(fileHandleDefault, "\nResults from running Nilakantha can be viewed in dataLog-From_Nilakantha_Method_lengthy_prints.txt\n")
+		_, err2prslc2da := fmt.Fprint(fileHandleDefault, "Results from running Nilakantha can be viewed in dataLog-From_Nilakantha_Method_lengthy_prints.txt")
 		check(err2prslc2da)
 
 			err := fileHandleDefault.Close()
@@ -251,7 +251,7 @@ var lenOfPi int
 			}
 
 	// print to ::: screen
-	fmt.Sprintf(" via Nilakantha with big floats. Written entirely by Richard Woolley\n")
+	webPrint(" via Nilakantha with big floats. Written entirely by Richard Woolley")
 
 	// ::: Prepare to exit the Gregory Nilakantha method functions
 	calculating = false // Allow another method to be selected.
