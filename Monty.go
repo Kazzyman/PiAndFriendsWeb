@@ -10,81 +10,79 @@ import (
 
 // @formatter:off
 
-func Monty(gridSizeAsString string, done chan bool) {
+func MonteCarloWeb(gridSizeAsString string, webPrint func(string)) {
+	
 	// Produce an alternate string suitable for printing, with commas every three digits from the right
-		withCommas := ""
-		for i, char := range gridSizeAsString {
-			select {
-			case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
-				// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
-				// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
-				fmt.Println("Goroutine Monty for-loop (1 of 2) is being terminated by select case finding the done channel to be already closed")
-				return // Exit the goroutine
-			default:
-			if i > 0 && (len(gridSizeAsString)-i)%3 == 0 {
-				withCommas += ","
-			}
-			withCommas += string(char)
-			}
+	withCommas := ""
+	for i, char := range gridSizeAsString {
+		if i > 0 && (len(gridSizeAsString)-i)%3 == 0 {
+			withCommas += ","
 		}
-		// ::: screen
-		fmt.Sprintf("\n\nSize of the grid has been set to: %s\n", withCommas)
+		withCommas += string(char)
+	}
+	// ::: screen
+	webPrint(fmt.Sprintf("Size of the grid has been set to: %s", withCommas))
 
 	// convert gridSize to an int
 	gridSize, err := strconv.Atoi(gridSizeAsString)
 	if err != nil {
-		fmt.Sprintf("Invalid input, please enter an integer in string form.")
+		webPrint("Invalid input, please enter an integer in string form.")
 		return
 	}
 		// ::: screen
 		if gridSize < 5 {
-			fmt.Sprintf("\n A grid that small makes me puke! \n")
+			webPrint(" A grid that small makes me puke! ")
 			return
 		}
-		if gridSize > 6000 && gridSize <= 8500 {
-			fmt.Sprintf("\n ... working ... expect 15s\n")
+		webPrint(" ... working ... ")
+		if gridSize > 3000 && gridSize <= 4000 {
+			webPrint(" ... working ... expect 7s")
+		} else if gridSize > 4000 && gridSize <= 5000 {
+			webPrint(" ... working ... expect 10s")
+		} else if gridSize > 6000 && gridSize <= 8500 {
+			webPrint(" ... working ... expect 15s")
 		} else if gridSize > 8500 && gridSize <= 11000 {
-			fmt.Sprintf("\n ... really working ... expect 25s\n")
+			webPrint(" ... really working ... expect 25s")
 		} else if gridSize > 11000 && gridSize <= 12000 {
-			fmt.Sprintf("\n ... I will be working really hard ...expect 30s\n")
+			webPrint(" ... I will be working really hard ...expect 30s")
 		} else if gridSize > 12000 && gridSize <= 13000 {
-			fmt.Sprintf("\n ... working really really hard...expect 40s\n")
+			webPrint(" ... working really really hard...expect 40s")
 		} else if gridSize > 13000 && gridSize <= 15000 {
-			fmt.Sprintf("\n ... for so very long, I'll be working ...expect 50s\n")
+			webPrint(" ... for so very long, I'll be working ...expect 50s")
 		} else if gridSize > 15000 && gridSize <= 18000 {
-			fmt.Sprintf("\n ... Yikes, I'll be working, for too long ...expect 1m5s\n")
+			webPrint(" ... Yikes, I'll be working, for too long ...expect 1m5s")
 		} else if gridSize > 18000 && gridSize <= 24000 {
-			fmt.Sprintf("\n ... while you take a nap, I'll still be working ... expect 1m25s\n")
+			webPrint(" ... while you take a nap, I'll still be working ... expect 1m25s")
 		} else if gridSize > 24000 && gridSize <= 34000 {
-			fmt.Sprintf("\n ... Brace yourself for how long I'll be working ... expect 4min\n")
+			webPrint(" ... Brace yourself for how long I'll be working ... expect 4min")
 		} else if gridSize > 34000 && gridSize <= 100000 {
-			fmt.Sprintf("\n ... Expect 5–15 minutes for ~4–5 digits ...\n")
-			fmt.Sprintf("\n ... and be advised that 120k, or more, will make me puke! ...\n")
+			webPrint(" ... Expect 5–15 minutes for ~4–5 digits ...")
+			webPrint(" ... and be advised that 120k, or more, will make me puke! ...")
 		} else if gridSize > 100000 && gridSize <= 119999 {
-			fmt.Sprintf("\n ... Working insanely hard, expect 15–30 minutes for ~5 digits ...\n")
+			webPrint(" ... Working insanely hard, expect 15–30 minutes for ~5 digits ...")
 		} else if gridSize > 119999 {
-			fmt.Sprintf("\n ... I have puked! \n")
+			webPrint(" ... I have puked! ")
 			return
 		}
 		
-	piApprox := GridPi(gridSize, done) // ::: run GridPi < - - - - - - - - - - < -
+	piApprox := GridPi(gridSize, webPrint) // ::: run GridPi < - - - - - - - - - - < -
 
 		// ::: screen
-		fmt.Sprintf("\nSize of the grid was set at: %s\n", withCommas)
-		fmt.Sprintf("Approximated Pi as big float: %s\n", piApprox.Text('f', 30))
+		webPrint(fmt.Sprintf("Size of the grid was set at: %s", withCommas))
+		webPrint(fmt.Sprintf("Approximated Pi as big float: %s", piApprox.Text('f', 30)))
 			piApproxFloat64, _ := piApprox.Float64()
-		fmt.Sprintf("Approximated Pi as float64:   %f\n", piApproxFloat64)
+		webPrint(fmt.Sprintf("Approximated Pi as float64:   %f", piApproxFloat64))
 			piFromMathLib := math.Pi
 			piFromMathLibBF := big.NewFloat(piFromMathLib)
-		fmt.Sprintf("Pi from Math Library:         %s\n", piFromMathLibBF.Text('f', 30))
-		fmt.Sprintf("Difference: %f\n", math.Abs(piApproxFloat64-math.Pi))
+		webPrint(fmt.Sprintf("Pi from Math Library:         %s", piFromMathLibBF.Text('f', 30)))
+		webPrint(fmt.Sprintf("Difference: %f", math.Abs(piApproxFloat64-math.Pi)))
 			_, digitCount := checkPiTo100(piApprox)
-		fmt.Sprintf("\nWe verified Pi to %d digits\n\n", digitCount)
+		webPrint(fmt.Sprintf("We verified Pi to %d digits", digitCount))
 }
 /*
 .
  */
-func GridPi(gridSize int, done chan bool) *big.Float {
+func GridPi(gridSize int, webPrint func(string)) *big.Float {
 	start := time.Now()
 		insideCircle := big.NewInt(0)
 		totalPoints := big.NewInt(int64(gridSize * gridSize))
@@ -92,11 +90,14 @@ func GridPi(gridSize int, done chan bool) *big.Float {
 		halfIncrement := new(big.Float).Quo(increment, big.NewFloat(2.0)).SetPrec(256)
 	for i := 0; i < gridSize; i++ {
 		select {
+		/*
 		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
 			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
 			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
 			fmt.Println("Goroutine Monty for-loop (2 of 2) is being terminated by select case finding the done channel to be already closed")
 			return increment // Exit the goroutine ::: We had to return some kind of a big float ... 
+			
+		 */
 		default:
 		for j := 0; j < gridSize; j++ {
 			// ::: x = (i * increment) + halfIncrement
@@ -138,6 +139,6 @@ func GridPi(gridSize int, done chan bool) *big.Float {
 			result += string(char)
 		}
 	// ::: screen	
-	fmt.Sprintf("\nTotal iterations: %s \nElapsed time: %s \n", result, TotalRun)
+	webPrint(fmt.Sprintf("Total iterations: %s Elapsed time: %s ", result, TotalRun))
 	return piApprox
 }

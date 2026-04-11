@@ -12,13 +12,13 @@ import (
 
 // Placeholder Pi calculation functions
 
-func MonteCarloBig(print func(string)) {
-	print("Starting Monte Carlo calculation...")
-	print("Pi approximation: 3.14159 (stub)")
-	print("Finished Monte Carlo.")
-}
+// webPrint func(string) is related ...
+/*
+The association isn't happening inside the formatWithThousandSeparators function itself. Instead, it happens in the way we pass the "baton" from the web server to the math engine.
+The actual association happens in 'main.go' inside the handleCalculation function, that is where we actually "plug" the math engine into the web response.
 
-// fyneFunc func(string)
+The following function only returns a string -- it knows nothing about webPrint. It only "prepares" the text before we hand it to webPrint.
+ */
 func formatWithThousandSeparators(num *big.Float) string {
 	// Convert to big.Int
 	numInt, _ := num.Int(nil)
@@ -43,7 +43,7 @@ func formatWithThousandSeparators(num *big.Float) string {
 	}
 	return prefix + result
 }
-// fyneFunc func(string)
+// webPrint func(string) ... is related... per the above. 
 func formatInt64WithThousandSeparators(num int64) string {
 
 	numStr := strconv.FormatInt(num, 10) // num is int64

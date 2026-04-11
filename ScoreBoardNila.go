@@ -112,7 +112,7 @@ func nilakanthaTermG(ch chan float64, k float64) {
 // A concurrent computation of pi using Nilakantha's formula.
 // by Diego Brener diegosilva13 on Github
 // ******* nifty scoreboard ***********************************
-func nifty_scoreBoard(fyneFunc func(string), done chan bool) float64 { // case 40:
+func nifty_scoreBoard(webPrint func(string), done chan bool) float64 { // case 40:
 	usingBigFloats = false
 	// We use a ticker to specify the interval to update the values on the scoreboard
 	ticker := time.NewTicker(time.Millisecond * 108)

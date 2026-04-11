@@ -47,22 +47,7 @@ fmt.Println("I am here in JW")
 			secondDenom = secondDenom + 2
 			cumulativeProduct = cumulativeProduct * (numerators / firstDenom) * (numerators / secondDenom)
 			π = cumulativeProduct * 2
-			/*
-				if iterInt64 == 100 {
-					fmt.Sprintf("%0.9f calculated using an infinite series by John Wallis circa 1655", π)
-					fmt.Sprintf("    3.1,415926535897933.14159265358979323846264338327950288419716939937510  is, again, the value of π from the web")
-						t := time.Now()
-						elapsed := t.Sub(start)
-					fmt.Sprintf(iterInt64, " iterations were completed in %s yielding 2 digits of π\n", RunTimeAsString)
-				}
-				if iterInt64 == 500 {
-					fmt.Sprintf("%0.9f calculated using an infinite series by John Wallis circa 1655", π)
-					fmt.Sprintf("    3.14,15926535897933.14159265358979323846264338327950288419716939937510  is, again, the value of π from the web")
-						t := time.Now()
-						elapsed := t.Sub(start)
-					fmt.Sprintf(iterInt64, " iterations were completed in %s yielding 3 digits of π\n", RunTimeAsString)
-				}
-			*/
+
 			if iterInt64 == 2000 {
 				fmt.Sprintf("%0.5f calculated using an infinite series by John Wallis circa 1655", π)
 				fmt.Sprintf("3.14159265358  is, again, the value of π from the web")

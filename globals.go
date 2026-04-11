@@ -7,8 +7,9 @@ import (
 // @formatter:off
 
 var calculating bool
-var radical_index int
+var Radical_index int
 var copyOfLastPosition int
+var iters_bbp int
 
 // convenience globals:
 var usingBigFloats = false // a variable of type bool which is passed by many funcs to print Result Stats Long()

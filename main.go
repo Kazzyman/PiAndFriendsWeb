@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func main() {
@@ -12,7 +14,7 @@ func main() {
 		http.ServeFile(w, r, "index.html")
 	})
 
-	// The "Engine" endpoint: This is where we trigger your Go functions
+	// The "Engine" endpoint: This is where we trigger the Go functions
 	http.HandleFunc("/run", handleCalculation)
 
 	port := os.Getenv("PORT")
@@ -24,39 +26,85 @@ func main() {
 	http.ListenAndServe(":"+port, nil)
 }
 
-// This replaces your TrafficManager logic
+// This replaces the TrafficManager logic from the Feyn version.
 func handleCalculation(w http.ResponseWriter, r *http.Request) {
+	// 1. Set Web Headers
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 
 	method := r.URL.Query().Get("method")
 
-	// Create a channel to catch the output strings from your math funcs
+	// 2. Define the channels (The "Plumbing")
 	outputChan := make(chan string)
 	done := make(chan bool)
+
+	// 3. Launch the Math Engine in a goroutine
+	// This must be inside the go func() where outputChan was defined
 	go func() {
-		switch method {
+		switch method { // ::: These cases are where the association is made to webPrint.
 		case "archimedes":
-			// Only one argument here now
-			ArchimedesBig()
+			// Here, we create an 'anonymous' function on the fly. Anything ArchimedesBig sends to 's' gets thrown onto the channel.
+			ArchimedesBig(func(s string) {
+				outputChan <- s
+			})
+		case "monte":
+			// We grab the gridSize from the URL, or default to "100" if empty
+			gridSize := r.URL.Query().Get("gridSize")
+			if gridSize == "" {
+				gridSize = "5000"
+			}
+			MonteCarloWeb(gridSize, func(s string) {
+				outputChan <- s
+			})
 		case "roots":
-			runRootsWeb(r.URL.Query(), func(s string) { outputChan <- s })
+			runRootsWeb(r.URL.Query(), func(s string) {
+				outputChan <- s
+			})
+		case "bbp":
+			digitsStr := r.URL.Query().Get("digits")
+			digits, err := strconv.Atoi(digitsStr)
+			if err != nil || digits <= 0 {
+				digits = 100 // Default fallback
+			}
+
+			// Updated to match: func(webPrint, digits, done)
+			bbpFast44(func(s string) {
+				outputChan <- s
+			}, digits, done)
+		case "chudnovsky":
+			digitsStr := r.URL.Query().Get("digits")
+			digits, err := strconv.Atoi(digitsStr)
+			if err != nil || digits <= 0 {
+				digits = 1000 // Default to a decent number of digits
+			}
+
+			// Matches: func(webPrint, digits, done)
+			chudnovskyBig(func(s string) {
+				outputChan <- s
+			}, digits, done)
+		default:
+			outputChan <- "Unknown method requested."
 		}
-		// This line tells the web browser the calculation is finished
 		done <- true
 	}()
 
-	// Stream the data to the browser
+	// 4. Stream Loop (The "Broadcaster")
 	for {
 		select {
 		case msg := <-outputChan:
-			fmt.Fprintf(w, "data: %s\n\n", msg)
+			// SSE protocol requires that if a message has multiple lines, 
+			// each line must start with "data: ". 
+			// Or, we can simply replace newlines with a placeholder or space.
+
+			// FIX: Remove internal newlines that break the SSE "data:" prefix
+			safeMsg := strings.ReplaceAll(msg, "\n", " ")
+
+			fmt.Fprintf(w, "data: %s\n\n", safeMsg)
 			w.(http.Flusher).Flush()
 		case <-done:
 			return
-		case <-r.Context().Done():
-			return
+			// ... rest of your select
 		}
 	}
 }

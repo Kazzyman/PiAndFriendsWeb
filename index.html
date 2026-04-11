@@ -9,85 +9,201 @@
             margin: 0;
             background: #1a1b26;
             color: #a9b1d6;
-            overflow: hidden; /* Prevents the whole page from scrolling */
+            overflow: hidden;
         }
 
         #sidebar {
             width: 350px;
-            min-width: 350px; /* Prevents sidebar from shrinking */
+            min-width: 350px;
             padding: 20px;
             border-right: 1px solid #414868;
             overflow-y: auto;
-            z-index: 10; /* Keeps buttons on top */
-        <button class="btn" style="background: #f7768e; color: white;" onclick="stopCurrent()">Stop/Clear Calculation</button>
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #16161e;
+        }
+
+        /* The Console wrapper needs to grow to fill the screen */
+        #console {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #0f111a;
         }
 
         #output {
             flex-grow: 1;
-            background: #0f111a; /* Deeper black for better contrast */
             padding: 25px;
             font-family: 'JetBrains Mono', 'Fira Code', monospace;
-            font-size: 13px; /* Slightly smaller for 32-inch density */
+            font-size: 14px;
             line-height: 1.5;
-            color: #89ddff; /* Cyan-tinted text for readability */
-            overflow-y: auto;
+            color: #89ddff;
+            overflow-y: auto; /* This makes the output scrollable */
             overflow-x: hidden;
-
             white-space: pre-wrap;
             word-break: break-all;
+        }
+
+        .btn {
+            padding: 12px;
+            border: none;
             border-radius: 4px;
-            border: 1px solid #32344a;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
 <div id="sidebar">
     <h3>Pi Methods</h3>
-    <button class="btn" style="background: #ff9e64;" onclick="start('archimedes')">Archimedes Method</button>
-    <button class="btn" style="background: #7aa2f7;" onclick="start('montecarlo')">Monte Carlo</button>
-
+    <button class="btn" style="background: #ff9e64; color: #1a1b26;" onclick="start('archimedes')">Archimedes Method</button>
+     
     <h3>Roots Demo</h3>
-    <input type="number" id="radical" placeholder="Radical (2 or 3)" style="width: 45%;">
-    <input type="number" id="workpiece" placeholder="Workpiece" style="width: 45%;">
-    <button class="btn" style="background: #e0af68; margin-top: 10px;" onclick="startRoots()">Run Roots Calculation</button>
+
+    <input type="number" id="radical" value="2">
+    <input type="number" id="workpiece" value="49">
+
+    <div class="input-group">
+        <label>BBP Digits:</label>
+        <input type="number" id="bbpDigits" value="1000">
+    </div>
+    <button class="btn" onclick="runBBP()">Run BBP Fast 44</button>
+    
+    <div class="input-group">
+        <label>Monty Grid Size:</label>
+        <input type="number" id="gridSize" value="5000">
+    </div>
+    <button class="btn" style="background: #7aa2f7; color: #1a1b26;" onclick="start('monte')">Run Monte Carlo</button>
+
+    <div class="input-group">
+        <label>Chudnovsky Digits:</label>
+        <input type="number" id="chudDigits" value="1000">
+    </div>
+    <button class="btn" onclick="runChudnovsky()">Run Chudnovsky</button>
+    
+    <button class="btn" style="background: #e0af68; color: #1a1b26; margin-top: 10px;" onclick="startRoots()">Run Roots Calculation</button>
+
+    <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
+    <button class="btn" style="background: #f7768e; color: white;" onclick="stopCurrent()">Stop/Clear Calculation</button>
 </div>
+
 <div id="console">
-    <div id="output">System initialized. Select a method to begin...</div>
+    <div id="status" style="padding: 10px 25px 0 25px; color: #7aa2f7; font-size: 12px; font-style: italic;">
+        System Ready.
+    </div>
+    <div id="output">Select a method to begin...</div>
 </div>
 
 <script>
-    function start(method) {
-        const out = document.getElementById('output');
-        out.innerText = "Connecting to engine...\n";
+    let currentEventSource = null;
 
-        const es = new EventSource(`/run?method=${method}`);
-
-        es.onmessage = (e) => {
-            // Append the new data
-            out.innerText += e.data + "\n";
-
-            // This is the fix: Force the scroll to the bottom
-            out.scrollTop = out.scrollHeight;
-        };
-
-        es.onerror = () => {
-            out.innerText += "\n[Calculation Finished or Connection Closed]\n";
-            es.close();
-        };
+    function runChudnovsky() {
+        const digits = document.getElementById('chudDigits').value || 1000;
+        start(`chudnovsky&digits=${digits}`);
+    }
+    
+    function runBBP() {
+        const digits = document.getElementById('bbpDigits').value || 1000;
+        // URL format: /run?method=bbp&digits=1000
+        start(`bbp&digits=${digits}`);
     }
 
+    function runMonty() {
+        const size = document.getElementById('gridSize').value || 1000;
+        // This tells the engine: "Run monte with this grid size"
+        start(`monte&gridSize=${size}`);
+    }
+    
     function startRoots() {
+        // 1. Grab the values from your HTML input fields
         const rad = document.getElementById('radical').value;
         const work = document.getElementById('workpiece').value;
-        // Similar to start() but passes rad and work in URL
+
+        // 2. Call your existing start() function with the formatted method string
+        // This creates the URL: /run?method=roots&radical=2&workpiece=49
+        start(`roots&radical=${rad}&workpiece=${work}`);
     }
-    function stopCurrent() {
+
+    function start(method) {
+        stopCurrent(false); // Close old, but don't wipe the screen results
+
+        const out = document.getElementById('output');
+        const status = document.getElementById('status');
+
+        // Clear the board for the new run
+        out.innerText = "";
+        status.innerText = "Connecting to engine...";
+
+        currentEventSource = new EventSource(`/run?method=${method}`);
+
+        /*
+        currentEventSource.onmessage = (e) => {
+            // Log it to the F12 console just so you can see the 'ghost' data
+            console.log("Message received:", e.data);
+
+            // If it's a comment/padding or empty, just ignore it
+            if (!e.data || e.data.trim() === "" || e.data.startsWith(":")) {
+                return;
+            }
+
+            // Update status once real data arrives
+            if (status.innerText !== "Engine streaming...") {
+                status.innerText = "Engine streaming...";
+            }
+
+            out.innerText += e.data + "\n\n";
+            out.scrollTop = out.scrollHeight;
+        };
+        
+         */
+
+        currentEventSource.onmessage = (e) => {
+            const out = document.getElementById('output');
+
+            // 1. If the message is exactly 1 character long, don't add a newline
+            if (e.data.length === 1) {
+                out.innerText += e.data;
+            } else {
+                // 2. For headers and status messages, keep the spacing
+                out.innerText += "\n" + e.data + "\n";
+            }
+
+            // 3. Keep the scroll at the bottom
+            out.scrollTop = out.scrollHeight;
+        };
+        
+
+        currentEventSource.onerror = () => {
+            status.innerText = "Connection closed (Calculation Complete).";
+            if (currentEventSource) {
+                currentEventSource.close();
+                currentEventSource = null;
+            }
+            // Notice: We do NOT clear out.innerText here anymore!
+        };
+    }
+
+    // Updated stopCurrent to accept a 'clearScreen' flag
+    function stopCurrent(clearScreen = true) {
         if (currentEventSource) {
             currentEventSource.close();
             currentEventSource = null;
         }
-        document.getElementById('output').innerText = "System Ready.";
+        document.getElementById('status').innerText = "System Ready."; // Attempting to fix this per Gemini?
+        
+        if (clearScreen) {
+            document.getElementById('output').innerText = "";
+        }
     }
+
+    // <input type="number" id="radical" placeholder="Radical (2 or 3)" style="padding: 8px; background: #24283b; border: 1px solid #414868; color: white;">
+    // <input type="number" id="workpiece" placeholder="Workpiece" style="padding: 8px; background: #24283b; border: 1px solid #414868; color: white; margin-top: 5px;">
+    
+    //    <button class="btn" onclick="startRoots()">Run Roots Demo</button>    
 </script>
 </body>
 </html>

@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-func bbpFast44(digits int) { // case 42: // -- AMFbbp_formulaA
-	fmt.Sprintf("bbpFast46 executed with %d digits", digits)
+func bbpFast44(webPrint func(string), digits int, done chan bool) { // case 42: // -- AMFbbp_formulaA
+	webPrint(fmt.Sprintf("bbpFast46 executed with %d digits", digits))
 
 	usingBigFloats = true
 	iters_bbp := 1
@@ -21,27 +21,49 @@ func bbpFast44(digits int) { // case 42: // -- AMFbbp_formulaA
 	p := uint((int(math.Log2(10)))*n + 3)
 
 	result := make(chan *big.Float, n)
+	worker := workers(p, done)
 
 	pi := new(big.Float).SetPrec(p).SetInt64(0)
 
 	for i := 0; i < n; i++ {
 		select {
-
+		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
+			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
+			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
+			webPrint("Goroutine BBPfast44 for-loop (1 of 3) is being terminated by select case finding the done channel to be already closed")
+			return // Exit the goroutine
 		default:
+			go worker(i, result)
 			iters_bbp = i
 		}
 	}
 
 	for i := 0; i < n; i++ {
 		select {
-
+		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
+			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
+			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
+			webPrint("Goroutine BBPfast44 for-loop (2 of 3) is being terminated by select case finding the done channel to be already closed")
+			return // Exit the goroutine
 		default:
 			pi.Add(pi, <-result)
 			iters_bbp = i
 		}
 	}
 
-	fmt.Sprintf("%[1]*.[2]*[3]f \n", 1, n, pi) // n is the number of digits of pi to calculate
+	dur := time.Since(start)
+	// fyneFunc(fmt.Sprintf("took %v to calculate %d digits of pi \n", dur, n)) // original, prior to grok
+
+	// output := fmt.Sprintf("%s\nIt only took BBP %v to calculate the following %d digits of pi\n", codeSnippet, dur, n)
+	output := fmt.Sprintf("\nIt only took BBP %v to calculate the following %d digits of pi\n", dur, n)
+
+	// Display in the GUI
+	webPrint(output)
+
+	// fmt.Printf("%[1]*.[2]*[3]f \n", 1, n, pi) // original from CLI version
+
+	// updateChan <- updateData{text:"%[1]*.[2]*[3]f \n", 1, n, pi} // does not work, even with the correct signature for updateChan <- updateData{text:"
+	webPrint(fmt.Sprintf("%[1]*.[2]*[3]f \n", 1, n, pi)) // n is the number of digits of pi to calculate
 
 	// log run stats to a log file
 	t := time.Now()
@@ -63,14 +85,6 @@ func bbpFast44(digits int) { // case 42: // -- AMFbbp_formulaA
 	_, err7 := fmt.Fprintf(fileHandle, "Total run was %s \n ", TotalRun)
 	check(err7)
 
-	// ::: Prepare to exit the BBP fast 44 method functions
-	calculating = false // Allow another method to be selected.
-	/*
-		for _, btn := range buttons2 { // ok to only Enable buttons1, because I expect to only ever execute this from window2
-			btn.Enable() // ::: Enable
-		}
-
-	*/
 }
 
 func workers(p uint, done chan bool) func(id int, result chan *big.Float) {
@@ -91,7 +105,7 @@ func workers(p uint, done chan bool) func(id int, result chan *big.Float) {
 			case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
 				// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
 				// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
-				fmt.Println("Goroutine BBPfast44-func-workers for-loop (3 of 3) is being terminated by select case finding the done channel to be already closed")
+				// webPrint("Goroutine BBPfast44-func-workers for-loop (3 of 3) is being terminated by select case finding the done channel to be already closed")
 				return // Exit the goroutine
 			default:
 				C1.Mul(C1, B16)

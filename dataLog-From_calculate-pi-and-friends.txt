@@ -1,0 +1,13 @@
+  -- 2 root of 49 by a ratio of PerfectProducts -- selection #1 on Mac-mini.local was run on: Fri Apr 10 16:55:07 2026Total run was 10.522375ms    -- 2 root of 49 by a ratio of perfect Products -- on Mac-mini.local was run on: Fri Apr 10 16:55:07 20260 was total Iterations Total run was 11.154625ms    -- 3 root of 100 by a ratio of perfect Products -- on Mac-mini.local was run on: Fri Apr 10 17:06:14 2026399998 was total Iterations 4.641509434, it's the best approximation for the Cube Root of 100 Total run was 47.71455025s    -- 3 root of 100 by a ratio of perfect Products -- on Mac-mini.local was run on: Fri Apr 10 17:15:16 2026399998 was total Iterations 4.641509434, it's the best approximation for the Cube Root of 100   -- 3 root of 50 by a ratio of perfect Products -- on Mac-mini.local was run on: Fri Apr 10 17:16:58 2026399998 was total Iterations 4.641509434, it's the best approximation for the Cube Root of 50 
+  -- calculate pi using the bbp formula -- on Mac-mini.local 
+was run on: Fri Apr 10 21:05:40 2026
+26925.74 was Iterations/Seconds 
+999 was total Iterations 
+Total run was 37.102041ms 
+ 
+  -- calculate pi using the bbp formula -- on Mac-mini.local 
+was run on: Fri Apr 10 22:38:56 2026
+23314.43 was Iterations/Seconds 
+999 was total Iterations 
+Total run was 42.849ms 
+ 
