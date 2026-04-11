@@ -5,7 +5,6 @@ import (
 	"math/big"
 	"os"
 	"strings"
-	"time"
 )
 
 // @formatter:off
@@ -33,7 +32,7 @@ var lenOfPi int
 		webPrint("... a very long while ... working ...")
 	}
 
-	start := time.Now()
+	// start := time.Now()
 
 	var iterBig int
 
@@ -147,9 +146,7 @@ var lenOfPi int
 		}
 		}
 	} // end of the loop, the only calculating loop
-	t := time.Now()
-	elapsed := t.Sub(start)
-	TotalRun := elapsed.String()
+	// t := time.Now()
 	
 		// ::: bug hammer = do this just once; KISS
 		printThis, lenOfPi = checkPiTo100(sumBig) // all local variables defined at the top of this function 
@@ -195,32 +192,6 @@ var lenOfPi int
 
 		webPrint(fmt.Sprintf("hey, rick, pi as calculated herein is: %s", printThisThen))
 		
-		_, err8prslc2c := fmt.Fprint(fileHandleNilakan, printThisThen) 
-		check(err8prslc2c)
-
-		err := fileHandleNilakan.Close()
-		if err != nil {
-			return
-		}
-
-		fileHandleDefault, err1prslc2d := os.OpenFile("dataLog-From_calculate-pi-and-friends.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-		check(err1prslc2d)             // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-		defer fileHandleDefault.Close()        // It’s idiomatic to defer a Close immediately after opening a file.
-		
-		// to ::: file
-			_, err2prslc2d := fmt.Fprintf(fileHandleDefault, "These are the %d verified digits we have calculated  :: ", lenOfPi)
-				check(err2prslc2d)
-			
-		// to ::: screen
-			webPrint(fmt.Sprintf(" These are the %d verified digits we have calculated: ", lenOfPi))
-
-		_, err8prslc2c = fmt.Fprint(fileHandleBig, printThisThen) // to a file
-			check(err8prslc2c)
-
-				err = fileHandleDefault.Close()
-				if err != nil {
-					return
-				}
 	}
 	webPrint("")
 
@@ -228,27 +199,6 @@ var lenOfPi int
 		fileHandleDefault, err1 := os.OpenFile("dataLog-From_calculate-pi-and-friends.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
 			check(err1)                              // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
 				defer fileHandleDefault.Close()     // It’s idiomatic to defer a Close immediately after opening a file.
-
-	Hostname, _ := os.Hostname()
-	current_time := time.Now()
-	TotalRun = elapsed.String()
-
-	// print to ::: file
-		_, err0 := fmt.Fprintf(fileHandleDefault, "  -- Nilakantha Somayaji -- on %s ", Hostname)
-		check(err0)
-		_, err6 := fmt.Fprint(fileHandleDefault, "was run on: ", current_time.Format(time.ANSIC), "")
-		check(err6)
-		_, err5 := fmt.Fprintf(fileHandleDefault, "%d was total Iterations; %d was precision setting for the big.Float types ", iterBig, precision)
-		check(err5)
-		_, err7 := fmt.Fprintf(fileHandleDefault, "Total run was %s  ", TotalRun)
-		check(err7)
-		_, err2prslc2da := fmt.Fprint(fileHandleDefault, "Results from running Nilakantha can be viewed in dataLog-From_Nilakantha_Method_lengthy_prints.txt")
-		check(err2prslc2da)
-
-			err := fileHandleDefault.Close()
-			if err != nil {
-				return
-			}
 
 	// print to ::: screen
 	webPrint(" via Nilakantha with big floats. Written entirely by Richard Woolley")
