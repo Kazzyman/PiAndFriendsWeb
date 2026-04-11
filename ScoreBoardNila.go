@@ -8,12 +8,12 @@ import (
 )
 
 // Adapted nifty_scoreBoard for Fyne GUI
-func nifty_scoreBoardG(done chan bool) float64 {
+func nifty_scoreBoardG(done chan bool, webPrint func(string)) float64 {
 	usingBigFloats = false // Unused in this version, kept for compatibility
 	ticker := time.NewTicker(time.Millisecond * 108)
 
 	// Launch Pi calculation
-	go pi_nfG(5000, done)
+	go pi_nfG(5000, done, webPrint)
 
 	// Update scoreboard periodically
 	go func() {
@@ -32,12 +32,12 @@ func nifty_scoreBoardG(done chan bool) float64 {
 		select {
 		case <-computationDone:
 			ticker.Stop()
-			fmt.Println("Program done calculating Pi.")
+			webPrint("Program done calculating Pi.")
 			return <-pichan
 		case <-done:
 			ticker.Stop()
-			fmt.Print("Terminal Output:\n\nAborted by user.")
-			fmt.Println("Scoreboard aborted via done channel")
+			fmt.Print("Terminal Output:Aborted by user.")
+			webPrint("Scoreboard aborted via done channel")
 			return 0.0 // Indicate abort
 		}
 	}
@@ -47,7 +47,7 @@ func nifty_scoreBoardG(done chan bool) float64 {
 func printCalculationSummaryG(done chan bool) {
 	select {
 	case piValue := <-pichan:
-		output := fmt.Sprintf("Terminal Output:\n\nComputed Value of Pi:\t\t%.11f\n# of Nilakantha Terms:\t\t%d", piValue, termsCount)
+		output := fmt.Sprintf("Terminal Output:Computed Value of Pi:\t\t%.11f# of Nilakantha Terms:\t\t%d", piValue, termsCount)
 		fmt.Print(output)
 	case <-done:
 		// Do nothing, let the abort case handle it
@@ -55,14 +55,14 @@ func printCalculationSummaryG(done chan bool) {
 }
 
 // Nilakantha series calculation
-func pi_nfG(n int, done chan bool) float64 {
+func pi_nfG(n int, done chan bool, webPrint func(string)) float64 {
 	ch := make(chan float64)
 	f := 3.0
 
 	for k := 1; k <= n; k++ {
 		select {
 		case <-done:
-			fmt.Println("pi_nf aborted")
+			webPrint("pi_nf aborted")
 			return f
 		default:
 			go nilakanthaTermG(ch, float64(k))
@@ -72,7 +72,7 @@ func pi_nfG(n int, done chan bool) float64 {
 	for k := 1; k <= n; k++ {
 		select {
 		case <-done:
-			fmt.Println("pi_nf aborted during summation")
+			webPrint("pi_nf aborted during summation")
 			return f
 		default:
 			termsCount++
@@ -122,13 +122,13 @@ func nifty_scoreBoard(webPrint func(string), done chan bool) float64 { // case 4
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	go pi_nf(5000, done)
+	go pi_nf(5000, done, webPrint)
 
 	// This anonymous function is responsible for updating the scoreboard
 	// as per the interval specified by the ticker
 	go func() {
 		for range ticker.C {
-			printCalculationSummary()
+			printCalculationSummary(webPrint)
 		}
 	}()
 
@@ -139,18 +139,18 @@ func nifty_scoreBoard(webPrint func(string), done chan bool) float64 { // case 4
 		// end the program (exit out of this infinite loop)
 		case <-computationDone:
 			ticker.Stop()
-			fmt.Println("Program done calculating Pi.")
+			webPrint("Program done calculating Pi.")
 			os.Exit(0)
 		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
 			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
 			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
-			fmt.Println("Goroutine Monty for-loop (1 of 2) is being terminated by select case finding the done channel to be already closed")
+			webPrint("Goroutine Monty for-loop (1 of 2) is being terminated by select case finding the done channel to be already closed")
 			return 0.0 // Exit the goroutine
 		// If the user interrupts the program (Ctrl+C) we end the
 		// program (exit out of this infinite loop)
 		case <-interrupt:
 			ticker.Stop()
-			fmt.Println("Program interrupted by the user.")
+			webPrint("Program interrupted by the user.")
 			return <-pichan
 		}
 	}
@@ -180,16 +180,26 @@ var termsCount int
 // The following function serves as our virtual scoreboard to show the current
 // computed value of Pi using Nilakantha's formula
 
-func printCalculationSummary() {
+func printCalculationSummary(webPrint func(string)) {
 
-	fmt.Print(ANSIClearScreenSequence)
+	webPrint(ANSIClearScreenSequence)
 	fmt.Println(ANSIFirstSlotScreenSequence, "Computed Value of Pi:\t\t", <-pichan)
 	fmt.Println(ANSISecondSlotScreenSequence, "# of Nilakantha Terms:\t\t", termsCount)
+	/* 
+		webPrint(ANSIFirstSlotScreenSequence, "Computed Value of Pi:\t\t", <-pichan) // too many arguments in call to webPrint, have (string, string, float64), want (string)
+		webPrint(ANSISecondSlotScreenSequence, "# of Nilakantha Terms:\t\t", termsCount) // too many arguments in call to webPrint, have (string, string, int), want (string)
+	 */
+	
+	/* 	
+	fmt.Print(ANSIClearScreenSequence)
+	fmt.Println(ANSIFirstSlotScreenSequence, "Computed Value of Pi:\t\t", <-pichan)
+	fmt.Println(ANSISecondSlotScreenSequence, "# of Nilakantha Terms:\t\t", termsCount) 
+	*/
 }
 
 // We are going to use Nilakantha's formula from the Tantrasamgraha (which is more than 500 years old)
 // ... to compute the value of Pi to several decimal points
-func pi_nf(n int, done chan bool) float64 {
+func pi_nf(n int, done chan bool, webPrint func(string)) float64 {
 	ch := make(chan float64)
 	f := 3.0
 	// The k variable is considered to be the current step
@@ -198,7 +208,7 @@ func pi_nf(n int, done chan bool) float64 {
 		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
 			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
 			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
-			fmt.Println("Goroutine Monty for-loop (1 of 2) is being terminated by select case finding the done channel to be already closed")
+			webPrint("Goroutine Monty for-loop (1 of 2) is being terminated by select case finding the done channel to be already closed")
 			return f // Exit the goroutine
 		default:
 			// Each Nilakantha term is calculated in its own goroutine
@@ -213,7 +223,7 @@ func pi_nf(n int, done chan bool) float64 {
 		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
 			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
 			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
-			fmt.Println("Goroutine Monty for-loop (1 of 2) is being terminated by select case finding the done channel to be already closed")
+			webPrint("Goroutine Monty for-loop (1 of 2) is being terminated by select case finding the done channel to be already closed")
 			return f // Exit the goroutine
 		default:
 			termsCount++

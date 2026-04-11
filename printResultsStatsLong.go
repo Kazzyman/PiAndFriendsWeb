@@ -69,104 +69,21 @@ func printResultStatsLong(sumBig *big.Float, precision int, useAlternateFile str
 		*/
 
 		// } else { continues below: (in other words, the following if-else conditions are only checked if length of pi was < 55,000 digits)
-		if useAlternateFile == "chudDid800orMoreLoops" {
-			fileHandleChud, err1prslc2c := os.OpenFile("dataLog-From_Chudnovsky_Method_lengthy_prints.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-			check(err1prslc2c)                                                                                                                         // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-			defer fileHandleChud.Close()                                                                                                               // It’s idiomatic to defer a Close immediately after opening a file.
-			_, err2prslc2c := fmt.Fprintf(fileHandleChud, "\n\nThese are the %d verified digits we have calculated via Chudnovsky: \n", copyOfLastPosition)
-			check(err2prslc2c)
-			for _, oneChar := range stringVerOfOurCorrectDigits {
-				// fmt.Print(oneChar) // to the console // the whole point of using this alternate file is to not clutter up the console or the default file
-				_, err8prslc2c := fmt.Fprint(fileHandleChud, oneChar) // to a file
-				check(err8prslc2c)
-			}
-
-			fileHandleChud.Close()
-		} else if useAlternateFile == "BBPF" {
-			fileHandleBBPF, err1prslc2c := os.OpenFile("dataLog-From_BBPF_Method_lengthy_prints.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-			check(err1prslc2c)                                                                                                                   // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-			defer fileHandleBBPF.Close()                                                                                                         // It’s idiomatic to defer a Close immediately after opening a file.
-			_, err2prslc2c := fmt.Fprintf(fileHandleBBPF, "\n\nThese are the %d verified digits we have calculated via BBPF: \n", copyOfLastPosition)
-			check(err2prslc2c)
-			for _, oneChar := range stringVerOfOurCorrectDigits {
-				// fmt.Print(oneChar) // to the console // the whole point of using an alternate file is to not clutter up the console or the default file
-				_, err8prslc2c := fmt.Fprint(fileHandleBBPF, oneChar) // to a file
-				check(err8prslc2c)
-			}
-			fileHandleBBPF.Close()
-		} else if useAlternateFile == "MonteCarlo" {
-			fileHandleMonte, err1prslc2c := os.OpenFile("dataLog-From_Monte_Method_lengthy_prints.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-			check(err1prslc2c)                                                                                                                     // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-			defer fileHandleMonte.Close()                                                                                                          // It’s idiomatic to defer a Close immediately after opening a file.
-			_, err2prslc2c := fmt.Fprintf(fileHandleMonte, "\n\nThese are the %d verified digits we have calculated via Monte: \n", copyOfLastPosition)
-			check(err2prslc2c)
-			for _, oneChar := range stringVerOfOurCorrectDigits {
-				// fmt.Print(oneChar) // to the console // the whole point of using an alternate file is to not clutter up the console or the default file
-				_, err8prslc2c := fmt.Fprint(fileHandleMonte, oneChar) // to a file
-				check(err8prslc2c)
-			}
-			fileHandleMonte.Close()
-		} else if useAlternateFile == "AM" {
-			fileHandleAM, err1prslc2c := os.OpenFile("dataLog-From_AM_Method_lengthy_prints.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-			check(err1prslc2c)                                                                                                               // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-			defer fileHandleAM.Close()                                                                                                       // It’s idiomatic to defer a Close immediately after opening a file.
-			_, err2prslc2c := fmt.Fprintf(fileHandleAM, "\n\nThese are the %d verified digits we have calculated via Archimedes: \n", copyOfLastPosition)
-			check(err2prslc2c)
-			for _, oneChar := range stringVerOfOurCorrectDigits {
-				fmt.Print(oneChar)                                  // to the console
-				_, err8prslc2c := fmt.Fprint(fileHandleAM, oneChar) // to a file
-				check(err8prslc2c)
-			}
-			fileHandleAM.Close()
-		} else if useAlternateFile == "Nilakantha" {
+		if useAlternateFile == "Nilakantha" {
 			regularExpression := regexp.MustCompile(`^3.1.........................................................................................`)
 			firstSectionOfPiFromWeb := regularExpression.FindStringSubmatch(webPiAs59766charString)
 			fmt.Printf("\npi from the web begins thusly: %s ", firstSectionOfPiFromWeb)
 			fmt.Printf("\npi as calculated herein begins: %0.90f ", sumBig)
 			fmt.Printf("\n.... we have matched %d digits: ", copyOfLastPosition)
-
-			fileHandleNilakan, err1prslc2c := os.OpenFile("dataLog-From_Nilakantha_Method_lengthy_prints.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-			check(err1prslc2c)                                                                                                                            // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-			defer fileHandleNilakan.Close()                                                                                                               // It’s idiomatic to defer a Close immediately after opening a file.
-			_, err2prslc2c := fmt.Fprintf(fileHandleNilakan,
-				"\n\nBelow are the %d verified digits we have calculated via Nilakantha using precision of %d and iterations of %d: \n",
-				copyOfLastPosition, precision, arg01)
-			check(err2prslc2c)
-			for _, oneChar := range stringVerOfOurCorrectDigits {
-				// fmt.Print(oneChar) // to the console we log pi, one digit at a time
-				_, err8prslc2c := fmt.Fprint(fileHandleNilakan, oneChar) // to a file we log pi one digit at a time
-				check(err8prslc2c)
-			}
-			fileHandleNilakan.Close()
 		} else if useAlternateFile == "ChudDidLessThanOneHundredLoops" {
-			fileHandleDefault, err1prslc2d := os.OpenFile("dataLog-From_calculate-pi-and-friends.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-			check(err1prslc2d)                                                                                                                    // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-			defer fileHandleDefault.Close()                                                                                                       // It’s idiomatic to defer a Close immediately after opening a file.
-			_, err2prslc2d := fmt.Fprintf(fileHandleDefault, "\n\nThese are the %d verified digits we have calculated via Chudnovsky: \n", copyOfLastPosition)
-			check(err2prslc2d)
-			fmt.Printf("\n These are the %d verified digits we have calculated via Chudnovsky: \n", copyOfLastPosition)
-			for _, oneChar := range stringVerOfOurCorrectDigits {
-				fmt.Print(oneChar)
-				_, err8prslc2d := fmt.Fprint(fileHandleDefault, oneChar)
-				check(err8prslc2d)
-			}
-			fileHandleDefault.Close()
+
 		} else if useAlternateFile == "BBPfConcurent" {
-			fileHandleBBPfConcurent, err1BBPfConcurent := os.OpenFile("dataLog-From_BBPfConcurent.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-			check(err1BBPfConcurent)                                                                                                               // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-			defer fileHandleBBPfConcurent.Close()                                                                                                  // It’s idiomatic to defer a Close immediately after opening a file.
-			_, err2BBPfConcurent := fmt.Fprintf(fileHandleBBPfConcurent,
-				"\n\nBelow are the %d verified digits we have calculated via BBPfConcurent using %d workers and %d loops: \n",
-				copyOfLastPosition, arg01, precision)
-			check(err2BBPfConcurent)
+
 			fmt.Printf("\nThese are the %d verified digits we have calculated via BBPfConcurent using %d workers and %d loops: \n", copyOfLastPosition, arg01, precision)
 			for _, oneChar := range stringVerOfOurCorrectDigits {
 				fmt.Print(oneChar)
-				_, err8BBPfConcurent := fmt.Fprint(fileHandleBBPfConcurent, oneChar)
-				check(err8BBPfConcurent)
 			}
-			_, err9BBPc := fmt.Fprintf(fileHandleBBPfConcurent, "  TotalRun was: %s", TotalRun)
-			check(err9BBPc)
+
 			/*
 			   // this bug came and went, very strange
 			       fmt.Println("\nµs")
@@ -175,26 +92,16 @@ func printResultStatsLong(sumBig *big.Float, precision int, useAlternateFile str
 			       failingString := "µs" // micro seconds
 			       fmt.Fprintf(fileHandleBBPfConcurent, "Micro Seconds should look like this: µs and this: %s", failingString)
 			*/
-			fileHandleBBPfConcurent.Close()
 
 			// this final else handles any instances of useAlternateFile not caught above
 		} else {
-			fileHandleDefault, err1prslc2d := os.OpenFile("dataLog-From_calculate-pi-and-friends.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-			check(err1prslc2d)                                                                                                                    // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-			defer fileHandleDefault.Close()                                                                                                       // It’s idiomatic to defer a Close immediately after opening a file.
-			// to file
-			_, err2prslc2d := fmt.Fprintf(fileHandleDefault, "\nThese are the %d verified digits we have calculated \n", copyOfLastPosition)
-			check(err2prslc2d)
+
 			// to screen
 			fmt.Printf("\n These are the %d verified digits we have calculated: \n", copyOfLastPosition)
 			for _, oneChar := range stringVerOfOurCorrectDigits {
 				// to screen
 				fmt.Print(oneChar)
-				// to file
-				_, err8prslc2d := fmt.Fprint(fileHandleDefault, oneChar)
-				check(err8prslc2d)
 			}
-			fileHandleDefault.Close()
 		}
 		fmt.Print("\n")
 	} // end of if's else, way up thar "if copyOfLastPosition > 55000 {} else {"   so, this has been the intance where pi is shorter than 55,000

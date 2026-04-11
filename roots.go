@@ -36,7 +36,7 @@ func xRootOfy(radical2or3 int, workPiece int, webPrint func(string)) {
 	// mgr.SetWorkPiece(workPiece)
 
 	webPrint("Building table...")
-	buildPairsSlice(radical2or3, webPrint)
+	buildPairsSlice(radical2or3)
 	webPrint("Table built, starting calculation...")
 	startBeforeCall := time.Now()
 
@@ -348,7 +348,7 @@ type Pairs struct {
 }
 
 // build a table of ::: perfect squares or cubes
-func buildPairsSlice(radical2or3 int, webPrint func(string)) {
+func buildPairsSlice(radical2or3 int) {
 // func buildPairsSlice(radical2or3 int) { // ::: - -
 	var identityProduct int
 	pairsSlice = nil // Clear/reset the slice between runs

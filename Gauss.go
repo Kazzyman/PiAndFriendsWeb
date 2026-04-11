@@ -40,7 +40,8 @@ func Gauss_Legendre(webPrint func(string)) {
 	for i := 0; i < iters; i++ { // call the 5 funcs (a,b,t,p, and pi) defined below, each of which returns just one []float64
 			an = a(an, bn)
 			bn = b(an, bn)
-			tn = t(an, bn, tn, pn) // calls func t and passes to it 4 []float64s
+			tn = t(an, bn, tn) // calls func t and passes to it 4 []float64s
+			// tn = t(an, bn, tn, pn) // calls func t and passes to it 4 []float64s
 			pn = p(pn)
 			pin = pi(an, bn, tn, pin) // pin array ends up containing the 4 values that were calculated for Pi
 			// each time pi is called it returns a new version of a []float64 array
@@ -87,7 +88,8 @@ func b(an, bn []float64) []float64 {
 	bn = append(bn, b)
 	return bn
 }
-func t(an, bn, tn, pn []float64) []float64 { // accepts 4 parameters of type []float64, and returns a []float64
+// func t(an, bn, tn, pn []float64) []float64 { // accepts 4 parameters of type []float64, and returns a []float64
+func t(an, tn, pn []float64) []float64 { // accepts 4 parameters of type []float64, and returns a []float64
 	t := tn[len(tn)-1] - pn[len(pn)-1]*math.Pow((an[len(an)-2]-an[len(an)-1]), 2)
 	tn = append(tn, t)
 	return tn

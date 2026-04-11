@@ -26,7 +26,7 @@ func runRootsWeb(params url.Values, webPrint func(string)) {
 	webPrint(fmt.Sprintf("Starting Roots Demo: Radical %d, Workpiece %d\n", radicalEntryAsInt, workPieceAsInt))
 
 	// This calls my original build logic from roots.go
-	buildPairsSlice(radicalEntryAsInt, webPrint)
+	buildPairsSlice(radicalEntryAsInt)
 
 	// Note: You can add the specific root-finding call here 
 	// Gemini: based on how you normally trigger it in window2.go

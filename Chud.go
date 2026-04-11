@@ -31,7 +31,8 @@ func chudnovskyBig(webPrint func(string), digits int, done chan bool) { // ::: -
 	start := time.Now() // ::: start will be passed, and then passed back, in order to be compared with end time t
 
 				// ::: calcPi  <---- runs from here: v v v v v v v  
-				loops, start, piAsBigFloat = calcPi(webPrint, float64(digits), start, done, piAsBigFloat) // ::: This is the call to calcPi
+				loops, start, piAsBigFloat = calcPi(webPrint, float64(digits), start, done) // ::: This is the call to calcPi
+				// loops, start, piAsBigFloat = calcPi(webPrint, float64(digits), start, done, piAsBigFloat) // had the piAsBigFloat
 				// ::: calcPi --- - - - --- ^ ^ ^ 
 
 
@@ -60,7 +61,8 @@ func chudnovskyBig(webPrint func(string), digits int, done chan bool) { // ::: -
 .
 */
 // calculate Pi for n number of digits
-func calcPi(webPrint func(string), digits float64, start time.Time, done chan bool, float *big.Float) (int, time.Time, *big.Float) {
+// func calcPi(webPrint func(string), digits float64, start time.Time, done chan bool, float *big.Float) (int, time.Time, *big.Float) { // Removed the float *big.Float
+func calcPi(webPrint func(string), digits float64, start time.Time, done chan bool) (int, time.Time, *big.Float) {
 	webPrint("This is an implementation for https://en.wikipedia.org/wiki/Chudnovsky_algorithm")
 	webPrint("It can be improved using binary splitting http://numbers.computation.free.fr/Constants/Algorithms/splitting.html")
 	webPrint("if we were to split it into two independent parts and simplify the formula. For more details, visit:")
