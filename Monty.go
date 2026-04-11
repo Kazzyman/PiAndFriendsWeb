@@ -89,7 +89,6 @@ func GridPi(gridSize int, webPrint func(string)) *big.Float {
 		increment := big.NewFloat(1.0 / float64(gridSize)).SetPrec(256)
 		halfIncrement := new(big.Float).Quo(increment, big.NewFloat(2.0)).SetPrec(256)
 	for i := 0; i < gridSize; i++ {
-		select {
 		/*
 		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
 			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
@@ -98,7 +97,6 @@ func GridPi(gridSize int, webPrint func(string)) *big.Float {
 			return increment // Exit the goroutine ::: We had to return some kind of a big float ... 
 			
 		 */
-		default:
 		for j := 0; j < gridSize; j++ {
 			// ::: x = (i * increment) + halfIncrement
 				x := new(big.Float).SetPrec(256)
@@ -117,7 +115,7 @@ func GridPi(gridSize int, webPrint func(string)) *big.Float {
 			iterationsForMonte16j = j
 		}
 		iterationsForMonte16i = i
-		}
+		
 	}
 	iterationsForMonteTotal = iterationsForMonte16j * iterationsForMonte16i
 		four := big.NewFloat(4.0).SetPrec(256)

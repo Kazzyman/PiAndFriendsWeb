@@ -107,8 +107,6 @@ func ArchimedesBig(webPrint func(string)) {
 	p.Mul(numberOfSides, s1) // p = numberOfSides * s1"))
 	p_d.Set(p) // Use big.Float method Set, to asign p to p_d  'read p sub d'"))
 	
-	webPrint(fmt.Sprintf("")) // Doubtful
-
 	for i := 0; i < 5001; i++ {
 		// 1. DO THE MATH
 		numberOfSides.Mul(numberOfSides, big.NewFloat(2))
@@ -195,7 +193,7 @@ func ArchimedesBig(webPrint func(string)) {
 
 		if i == 4500 { // was 5000
 			// webPrint(fmt.Sprintf("This should work, and it does! %d.", i))
-			webPrint(fmt.Sprintf("------------------------------------------------------------------"))
+			webPrint("------------------------------------------------------------------")
 			
 			formattedNum := formatWithThousandSeparators(numberOfSides) // Manually format using a thousand separator
 			webPrint(fmt.Sprintf("All Done! So, how many sides does our polygon have now? A lot: A staggering:%sSIDED POLYGON !!!", formattedNum))
@@ -211,31 +209,31 @@ func ArchimedesBig(webPrint func(string)) {
 		
 		if i < 24 {
 			time.Sleep(135 * time.Millisecond) // Slow it down slightly for visibility
-			if i == 2 {webPrint(fmt.Sprintf("\t\tSleeping each iteration for 135 milliseconds..."))}
+			if i == 2 {webPrint("\t\tSleeping each iteration for 135 milliseconds...")}
 		}
 		if i > 23 && i < 50 {
-			if i == 26 {webPrint(fmt.Sprintf("\t\tSleeping each iteration for 55 milliseconds..."))}
+			if i == 26 {webPrint("\t\tSleeping each iteration for 55 milliseconds...")}
 			time.Sleep(55 * time.Millisecond) // Slow it down slightly for visibility
 		}
 		if i > 49 && i < 150 {
-			if i == 52{webPrint(fmt.Sprintf("\t\tSleeping each iteration for 35 milliseconds..."))}
+			if i == 52{webPrint("\t\tSleeping each iteration for 35 milliseconds...")}
 			time.Sleep(35 * time.Millisecond) // Slow it down slightly for visibility
 		}
 		if i > 149 && i < 400 {
-			if i == 152 {webPrint(fmt.Sprintf("\t\tSleeping each iteration for 7 milliseconds..."))}
+			if i == 152 {webPrint("\t\tSleeping each iteration for 7 milliseconds...")}
 			time.Sleep(7 * time.Millisecond) // Slow it down slightly for visibility
 		}
 		if i > 399 && i < 1100 {
-			if i == 402 {webPrint(fmt.Sprintf("\t\tSleeping each iteration for 2 milliseconds..."))}
+			if i == 402 {webPrint("\t\tSleeping each iteration for 2 milliseconds...")}
 			time.Sleep(2 * time.Millisecond) // Slow it down slightly for visibility
 		}
 		if i > 1099 && i < 2000 {
-			if i == 1102 {webPrint(fmt.Sprintf("\t\tSleeping each iteration for 1 milliseconds..."))}
+			if i == 1102 {webPrint("\t\tSleeping each iteration for 1 milliseconds...")}
 			time.Sleep(time.Millisecond) // Slow it down slightly for visibility
 		}
 		if i > 1999 {
 			time.Sleep(0 * time.Millisecond)
-			if i == 2002 {webPrint(fmt.Sprintf("\t\tNo more sleeping!!!..."))}}		
+			if i == 2002 {webPrint("\t\tNo more sleeping!!!...")}}		
 	} // end of for loop, only one way out 
 		
 // ::: Prepare to exit the Archimedes method function, (set coast-clear flag and enable all buttons)

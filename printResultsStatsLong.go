@@ -34,8 +34,8 @@ func printResultStatsLong(sumBig *big.Float, precision int, useAlternateFile str
 
 	if copyOfLastPosition > 55000 { // if length of pi is > 55,000 digits we have something really big
 		// print (log) to a special file
-		fmt.Printf("\n\n\nWe have been tasked with making a lot of pie and it was sooo big it needed its own file ...\n")
-		fmt.Println("... Go have a look in /.big_pie_is_in_here.txt to find all the digits of π you had requested. \n\n")
+		fmt.Printf("\n\n\nWe have been tasked with making a lot of pie and it was sooo big it needed its own file ...")
+		fmt.Println("... Go have a look in /.big_pie_is_in_here.txt to find all the digits of π you had requested.")
 
 		fileHandleBig, err1prslc2c := os.OpenFile("big_pie_is_in_here.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
 		check(err1prslc2c)                                                                                             // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt

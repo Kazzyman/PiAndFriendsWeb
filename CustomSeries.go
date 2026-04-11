@@ -31,9 +31,7 @@ func CustomSeries(webPrint func(string)) {
 	 */
 	
 	for iterInt64 < 300000000 {
-		select {
 
-		default:
 		iterInt64++
 		iterFloat64++
 		nextOdd = nextOdd + 2
@@ -94,7 +92,7 @@ func CustomSeries(webPrint func(string)) {
 			webPrint("Three-hundred-million iterations were executed. This section was written entirely by Richard Woolley")
 
 		}
-	}
+	
 	}
 	// ::: Prepare to exit the Gregory Leibniz method function
 	calculating = false // Allow another method to be selected.

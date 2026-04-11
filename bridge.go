@@ -67,7 +67,7 @@ func SetupRootsDemo(radicalEntryAsString, workPieceAsString string, webPrint fun
 	workPiece, err := strconv.Atoi(trimmedWorkPieceString)
 	if err != nil || workPiece < 0 {
 		webPrint("Invalid number: enter a non-negative integer\n")
-		webPrint(fmt.Sprintf("Invalid number: enter a non-negative integer\n")) // This does not assign the string to any var?
+		webPrint("Invalid number: enter a non-negative integer\n") // This does not assign the string to any var?
 		return
 	}
 	webPrint(fmt.Sprintf(" ::: - Radical is set to: %d\n", radical)) // These were Printf 

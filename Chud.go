@@ -25,7 +25,7 @@ import (
 func chudnovskyBig(webPrint func(string), digits int, done chan bool) { // ::: - -
 
 	// ::: webPrint will use updateOutput[1-4] depending on from which window called -- so we pass webPrint to calcPi(webPrint, float64(digits), start, loops) thusly 
-	webPrint(fmt.Sprintf("... working ..."))
+	webPrint("... working ...")
 	var loops int
 	piAsBigFloat := new(big.Float).SetPrec(512).SetFloat64(0.0)
 	start := time.Now() // ::: start will be passed, and then passed back, in order to be compared with end time t
@@ -47,9 +47,9 @@ func chudnovskyBig(webPrint func(string), digits int, done chan bool) { // ::: -
 	// The following runs ::: after calcPi 
 	webPrint(fmt.Sprintf(" loops were: %d, and digits requested was: %d ", loops, digits))
 
-	webPrint(fmt.Sprintf(" 	The Chudnovsky algorithm is an incredibly-fast algorithm for calculating the digits of pi. It was developed by Gregory Chudnovsky and his "))
+	webPrint(" 	The Chudnovsky algorithm is an incredibly-fast algorithm for calculating the digits of pi. It was developed by Gregory Chudnovsky and his ")
 	webPrint("brother David Chudnovsky in the 1980s. It is more efficient than other algorithms and is based on the theory of modular equations. It has been ")
-	webPrint(fmt.Sprintf("used to calculate pi to over 62 trillion digits."))
+	webPrint("used to calculate pi to over 62 trillion digits.")
 
 	// webPrint(fmt.Sprintf("Final Pi: %s", finalResult))
 	done <- true
@@ -252,9 +252,9 @@ func calcPi(webPrint func(string), digits float64, start time.Time, done chan bo
 				finishChudIfsAndPrint(webPrint, pi, useAlternateFile)
 			}
 			if queryIfTimeToDie == 0 {
-				webPrint(fmt.Sprintf("if queryIfTimeToDie is 0, time to die"))
+				webPrint("if queryIfTimeToDie is 0, time to die")
 				webPrint(fmt.Sprintf("precisionision was: %d ", precision))
-				break
+				break // ::: todo: not sure if I need this or if it is located correctly? 
 			}
 			// 1,000,000 digits requires 70516 loops, per the run on May 7 2023 at 10:30
 			//  was run on: Sun May  7 08:50:23 2023

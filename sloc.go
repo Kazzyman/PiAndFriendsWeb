@@ -153,7 +153,7 @@ func countAndLogSLOC() { // ::: - -
 	fmt.Printf("Total of comments etc. + e-SLOC = %d = t-SLOC\n\n", sumOfCodePlusNon)
 
 	if runes3Total > 0 || runes1Total > 0 || commentBlock3Total > 0 || commentBlock1Total > 0 { // if any of these was > 0
-		fmt.Println("\n\n === hey we actually got something from where there should not have been anything === \n\n")
+		fmt.Println("\n\n === hey we actually got something from where there should not have been anything === ")
 	}
 
 }

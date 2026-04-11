@@ -38,15 +38,13 @@ func Gauss_Legendre(webPrint func(string)) {
 	iters := 3
 	// run the algorithm iters times
 	for i := 0; i < iters; i++ { // call the 5 funcs (a,b,t,p, and pi) defined below, each of which returns just one []float64
-		select {
-		default:
 			an = a(an, bn)
 			bn = b(an, bn)
 			tn = t(an, bn, tn, pn) // calls func t and passes to it 4 []float64s
 			pn = p(pn)
 			pin = pi(an, bn, tn, pin) // pin array ends up containing the 4 values that were calculated for Pi
 			// each time pi is called it returns a new version of a []float64 array
-		}
+		
 	}
 
 	// print results
@@ -55,15 +53,11 @@ func Gauss_Legendre(webPrint func(string)) {
 	// ran as ...
 	// for exterior_catcher, value := range pin { // with the two test prints below
 	for _, value := range pin { // skip initializing a counter? no!, not sure exactly all that 'range' does, but when appllied to pin fetches calculated Pi from pin and apparently also another return that is being tossed via _
-		select {
-		default:
 			// above 'range' seems to tell the for to "range" accross pin and assign a successive element to 'value', there were 4 elements, so it runs 4 times -- the _ catches the unneeded return from 'range' which starts at 0 and goes to 3 in this loop
 			webPrint(fmt.Sprintf("pin is %.16f, and ... ", pin))            // pin is an aray of calculated values for Pi  // Rick's code to discover same
 			webPrint(fmt.Sprintf("%.16f Was calculated herewith\n", value)) // 'value' created on prior 'for' line and is set 4 times to a successive element of pin
 			Ricks_value = value                                             // Rick's code to grab that final 'value' from last iteration
 			// fmt.Printf("\n\nTop underscore is %d \n\n", exterior_catcher) it starts at 0 and goes to 3
-
-		}
 	}
 	// webPrint(fmt.Sprintf(Ricks_value)) // Rick's code
 	// fmt.Printf("\n\nBottom underscore is %d \n\n", exterior_catcher) this exterior_catcher var is never touched by the for loop
