@@ -1,0 +1,65 @@
+show source code via a separate feature
+
+go mod tidy && go build && ./yourExecutable 
+
+// @formatter:off
+
+::: cheat-sheet : Goland
+
+splat r :: replace 
+
+splat e  :: list of recent files visited 
+::: shift splat backspace/delete  :: move to where you last made an edit (anywhere in the project) ; repeat to step further back in time
+splat [  :: to return to previous position||file  (multiple such commands will walk you back from whence you came).
+splat ]  :: steps forward after you have stepped back. 
+
+option-return  :: spell correction 
+double-tap shift  :: key to search everywhere
+
+shift F6  :: rename func via refactor
+splat F6  :: change/refactor signature (:::SUPER COOL!!!) 
+
+Shift splat U  :: toggle case
+splat b  :: go to declaration 
+
+Ctrl-k  :: kill to end of line. 
+
+::: end cheat-sheet Goland.
+
+option + return usually inserts a newline.
+shift + return inserts a newline in Grok-3 "ask anything" text box.
+
+
+
+
+Cmd-shift-p     search for a command and its keybinding
+Alt-Cmd-/       insert comment block
+
+
+
+
+
+whenever switching machines
+
+git add ., git commit -m "asdf", and git push on the machine you are leaving ... then ...
+git status
+git pull
+on the machine that you will be working on next
+
+whenever switching machines
+
+
+
+There are excellent open-source or VSCodium-friendly alternatives:
+
+    Codeium (Not a typo, similar name!): This is the most popular AI for VSCodium. It offers a free tier for individuals that includes autocomplete and a Chat sidebar very similar to what you saw in the video. It works perfectly in VSCodium because they have a dedicated extension in the Open VSX registry.
+
+    Continue: An open-source extension that lets you plug in your own AI models (like Claude, GPT-4, or even local models running on your Mac Mini).
+
+    Supermaven: Known for being extremely fast, it also has a VSCodium-compatible extension.
+
+The Verdict
+
+    If you want the exact "official" experience from the video (GitHub Copilot): You would need to download the official "Visual Studio Code" (the blue icon version) from Microsoft.
+
+    If you want to stay "De-Microsofted": I highly recommend searching your VSCodium extensions for "Codeium" or "Continue." You'll get nearly identical features (code explanations, refactoring help, and ghost-text completion) without the licensing headaches.
