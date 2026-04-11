@@ -63,3 +63,8 @@ The Verdict
     If you want the exact "official" experience from the video (GitHub Copilot): You would need to download the official "Visual Studio Code" (the blue icon version) from Microsoft.
 
     If you want to stay "De-Microsofted": I highly recommend searching your VSCodium extensions for "Codeium" or "Continue." You'll get nearly identical features (code explanations, refactoring help, and ghost-text completion) without the licensing headaches.
+
+
+
+
+Would you like VSCodium to [periodically run "git fetch"](https://go.microsoft.com/fwlink/?linkid=865294)?
