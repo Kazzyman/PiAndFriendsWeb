@@ -178,27 +178,10 @@ var lenOfPi int
 
 		webPrint(fmt.Sprintf(".... we have matched %d digits in %s iterations: ", lenOfPi, printableIterbigWithcommas))
 
-		fileHandleNilakan, err1prslc2c := os.OpenFile("dataLog-From_Nilakantha_Method_lengthy_prints.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-		check(err1prslc2c)         // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt  // It’s idiomatic to defer a Close immediately after opening a file.
-		defer func(fileHandleNilakan *os.File) {
-			err := fileHandleNilakan.Close()
-				if err != nil {}
-			}(fileHandleNilakan) 
-		
-		// print to ::: file
-				_, err2prslc2c := fmt.Fprintf(fileHandleNilakan,
-					"Below rick are the %d verified digits we have calculated via Nilakantha using precision of %d and iterations of %d: ", lenOfPi, precision, iterBig)
-						check(err2prslc2c)
-
 		webPrint(fmt.Sprintf("hey, rick, pi as calculated herein is: %s", printThisThen))
 		
 	}
 	webPrint("")
-
-	// Open a log file
-		fileHandleDefault, err1 := os.OpenFile("dataLog-From_calculate-pi-and-friends.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-			check(err1)                              // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-				defer fileHandleDefault.Close()     // It’s idiomatic to defer a Close immediately after opening a file.
 
 	// print to ::: screen
 	webPrint(" via Nilakantha with big floats. Written entirely by Richard Woolley")
