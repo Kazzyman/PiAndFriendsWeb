@@ -97,28 +97,44 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 			GregoryLeibniz(func(s string) {
 				outputChan <- s
 			}, done)
-		default:
-			outputChan <- "Unknown method requested."
-		}
-		done <- true
-	}()
 
-	// 4. Stream Loop (The "Broadcaster")
-	for {
-		select {
-		case msg := <-outputChan:
-			// SSE protocol requires that if a message has multiple lines, 
-			// each line must start with "data: ". 
-			// Or, we can simply replace newlines with a placeholder or space.
+		case "nilakantha":
+            itersStr := r.URL.Query().Get("iters")
+            iters, err := strconv.Atoi(itersStr)
+            if err != nil || iters <= 0 {
+                iters = 1000000 
+            }
+            precStr := r.URL.Query().Get("precision")
+            precision, err := strconv.Atoi(precStr)
+            if err != nil || precision <= 0 {
+                precision = 512 
+            }
+            NilakanthaBig(iters, precision, done, func(s string) {
+                outputChan <- s
+            })
+        default:
+            outputChan <- "Unknown method requested."
+        }
 
-			// FIX: Remove internal newlines that break the SSE "data:" prefix
-			safeMsg := strings.ReplaceAll(msg, "\n", " ")
+        // --- THE FIX STARTS HERE ---
+        // Instead of a plain "done <- true", we use this safe select block:
+        select {
+        case done <- true:
+            // Successfully sent the signal.
+        default:
+            // The channel is full or already closed; do nothing and don't panic.
+        }
+    }()
 
-			fmt.Fprintf(w, "data: %s\n\n", safeMsg)
-			w.(http.Flusher).Flush()
-		case <-done:
-			return
-			// ... rest of your select
-		}
-	}
+    // 4. Stream Loop (The "Broadcaster")
+    for {
+        select {
+        case msg := <-outputChan:
+            safeMsg := strings.ReplaceAll(msg, "\n", " ")
+            fmt.Fprintf(w, "data: %s\n\n", safeMsg)
+            w.(http.Flusher).Flush()
+        case <-done:
+            return
+        }
+    }
 }

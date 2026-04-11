@@ -11,3 +11,15 @@ was run on: Fri Apr 10 22:38:56 2026
 999 was total Iterations 
 Total run was 42.849ms 
    -- Gottfried Wilhelm Leibniz --  on Mac-mini.local was run on: Sat Apr 11 06:00:57 20262157870384 was Lines/Second  1.541336e+08 was Iterations/Seconds  4.000000e+09 was total Iterations  Total runTime was 25.951512375s 
+  -- calculate pi using the bbp formula -- on Mac-mini.local 
+was run on: Sat Apr 11 14:48:24 2026
+26226.18 was Iterations/Seconds 
+999 was total Iterations 
+Total run was 38.091708ms 
+   -- Gottfried Wilhelm Leibniz --  on Mac-mini.local was run on: Sat Apr 11 14:49:01 20262142630417 was Lines/Second  1.530450e+08 was Iterations/Seconds  4.000000e+09 was total Iterations  Total runTime was 26.136098667s 
+  -- calculate pi using the bbp formula -- on Mac-mini.local 
+was run on: Sat Apr 11 14:53:31 2026
+52982.82 was Iterations/Seconds 
+999 was total Iterations 
+Total run was 18.855167ms 
+   -- 2 root of 49 by a ratio of PerfectProducts -- selection #1 on Mac-mini.local was run on: Sat Apr 11 14:53:36 2026Total run was 6.29175ms    -- 2 root of 49 by a ratio of perfect Products -- on Mac-mini.local was run on: Sat Apr 11 14:53:36 20260 was total Iterations   -- Gottfried Wilhelm Leibniz --  on Mac-mini.local was run on: Sat Apr 11 14:53:53 20261813028024 was Lines/Second  1.295020e+08 was Iterations/Seconds  4.003338e+09 was total Iterations  Total runTime was 30.913326042s   -- Gottfried Wilhelm Leibniz --  on Mac-mini.local was run on: Sat Apr 11 14:57:06 20262265037799 was Lines/Second  1.617884e+08 was Iterations/Seconds  4.000000e+09 was total Iterations  Total runTime was 24.723649208s 

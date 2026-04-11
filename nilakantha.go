@@ -173,9 +173,10 @@ var lenOfPi int
 	webPrint("")
 
 	// print to ::: screen
-	webPrint(" via Nilakantha with big floats. Written entirely by Richard Woolley")
+	webPrint("via Nilakantha with big floats. Written entirely by Richard Woolley")
 
 	// ::: Prepare to exit the Gregory Nilakantha method functions
 	calculating = false // Allow another method to be selected.
+	// close(done)
 	// written entirely by Richard Woolley
 } 
