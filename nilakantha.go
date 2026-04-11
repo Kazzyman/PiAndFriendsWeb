@@ -158,17 +158,6 @@ var lenOfPi int
 			webPrint("  After allowing this process to finish (you may have to continue prodding this thing along for a while) ... ")
 			webPrint("... Go have a look in /.big_pie_is_in_here.txt to find all the digits of π you had requested. ")
 
-		// print (log) to a special ::: file
-			_, err2prslc2c := fmt.Fprintf(fileHandleBig, "These are the %d verified digits we have calculated, dumped by rick  :: ", lenOfPi)
-				check(err2prslc2c)
-	
-			_, err8prslc2c := fmt.Fprint(fileHandleBig, printThisThen) // to a file
-				check(err8prslc2c)
-
-		err := fileHandleBig.Close()
-		if err != nil {
-			return
-		}
 	} else { 
 
 		webPrint(fmt.Sprintf("pi as calculated herein is: %s", printThisThen))
