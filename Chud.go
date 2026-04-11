@@ -254,7 +254,7 @@ func calcPi(webPrint func(string), digits float64, start time.Time, done chan bo
 			if queryIfTimeToDie == 0 {
 				webPrint("if queryIfTimeToDie is 0, time to die")
 				webPrint(fmt.Sprintf("precisionision was: %d ", precision))
-				break // ::: todo: not sure if I need this or if it is located correctly? 
+				// break // ::: todo: not sure if I need this or if it is located correctly? 
 			}
 			// 1,000,000 digits requires 70516 loops, per the run on May 7 2023 at 10:30
 			//  was run on: Sun May  7 08:50:23 2023

@@ -58,7 +58,7 @@ func xRootOfy(radical2or3 int, workPiece int, webPrint func(string)) {
 		if i%80000 == 0 && i > 0 { // if remainder of div is 0 (every 80,000 iterations) conditional progress updates print
 			stringVindx := formatInt64WithThousandSeparators(int64(indx))
 			webPrint(fmt.Sprintf("%s iterations completed... of 400,000", stringVindx))
-			webPrint(fmt.Sprintf("... still working ...")) // ok
+			webPrint("... still working ...") // ok
 
 			webPrint(fmt.Sprintf("%s iterations completed... of 400,000", stringVindx))
 			fmt.Println(i, "... still working ...")
@@ -322,17 +322,17 @@ func setPrecisionForSquareOrCubeRoot(radical2or3, workPiece int, webPrint func(s
 		if workPiece > 4 {
 			precisionOfRoot = 1700
 			fmt.Println(" Default precision is 1700 ")
-			webPrint(fmt.Sprintf(" Default precision is 1700 "))
+			webPrint(" Default precision is 1700 ")
 		}
 		if workPiece == 2 || workPiece == 11 || workPiece == 17 {
 			precisionOfRoot = 600
 			fmt.Println(" resetting precision to 600 ")
-			webPrint(fmt.Sprintf(" resetting precision to 600 "))
+			webPrint(" resetting precision to 600 ")
 		}
 		if workPiece == 3 || workPiece == 4 || workPiece == 14 {
 			precisionOfRoot = 900
 			fmt.Println(" resetting precision to 900 ")
-			webPrint(fmt.Sprintf(" resetting precision to 900 "))
+			webPrint(" resetting precision to 900 ")
 		}
 	}
 	if radical2or3 == 2 {

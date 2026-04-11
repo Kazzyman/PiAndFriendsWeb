@@ -9,10 +9,10 @@ import (
 
 // @formatter:off
 
-func TheSpigot(numberOfDigitsToCalc int, done chan bool) {
+func TheSpigot(numberOfDigitsToCalc int, done chan bool, webPrint func(string)) {
 
-	fmt.Sprintf("\n\n... from A trick I mooched off of GitHub ... and re-wrote\n\n")
-	fmt.Sprintf("Spigot executed with a request for %d digits, and produced:\n\n", numberOfDigitsToCalc) // ::: pi is then printed one char at a time in the loop below
+	webPrint("... from A trick I mooched off of GitHub ... and re-wrote")
+	webPrint(fmt.Sprintf("Spigot executed with a request for %d digits, and produced:", numberOfDigitsToCalc)) // ::: pi is then printed one char at a time in the loop below
 
 	usingBigFloats = false
 
@@ -95,11 +95,12 @@ func SpigotCalculation(numberOfDigits int, done chan bool) { // Rick's version d
 		}
 		// Rick's code : File prints
 		if i == 1 {
-			fmt.Sprintf(".") // ::: print the decimal between the three and the 1, i.e., 3.1 
+			// fmt.Sprintf(".") // ::: print the decimal between the three and the 1, i.e., 3.1 // ::: todo: NOT SURE WHAT IS GOING ON HERE?
 			piWithInsertedDecimalPoint = append(piWithInsertedDecimalPoint, ".")
 		} // insert the decimal point between the 3 and the 1
 
-		fmt.Sprintf(strconv.Itoa(q)) // ::: Rick's new method of displaying pi, one digit at a time
+		// fmt.Sprintf(strconv.Itoa(q)) // ::: Rick's new method of displaying pi, one digit at a time // ::: todo: NOT SURE WHAT IS GOING ON HERE?
+		// was: fyneFunc(fmt.Sprintf(strconv.Itoa(q))) // ::: Rick's new method of displaying pi, one digit at a time
 
 		piWithInsertedDecimalPoint = append(piWithInsertedDecimalPoint, strconv.Itoa(q))
 
@@ -112,15 +113,15 @@ func SpigotCalculation(numberOfDigits int, done chan bool) { // Rick's version d
 			check(err1)                                                                                                             // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
 			defer fileHandle.Close()                                                                                                // It’s idiomatic to defer a Close immediately after opening a file.
 			Hostname, _ := os.Hostname()
-			_, err0 := fmt.Fprintf(fileHandle, "\n  -- partial Spigot in process -- on %s \n", Hostname)
+			_, err0 := fmt.Fprintf(fileHandle, "  -- partial Spigot in process -- on %s ", Hostname)
 			check(err0)
 			current_time := time.Now()
-			_, err6 := fmt.Fprint(fileHandle, "... running at: ", current_time.Format(time.ANSIC), "\n")
+			_, err6 := fmt.Fprint(fileHandle, "... running at: ", current_time.Format(time.ANSIC), "")
 			check(err6)
 			TotalRun := elapsed.String() // cast time durations to a String type for Fprintf "formatted print"
-			_, err7 := fmt.Fprintf(fileHandle, "Runtime this far is %s \n", TotalRun)
+			_, err7 := fmt.Fprintf(fileHandle, "Runtime this far is %s ", TotalRun)
 			check(err7)
-			_, err8 := fmt.Fprintf(fileHandle, "... while calculating Pi to %d digits, having completed %d digits\n", numberOfDigits, i)
+			_, err8 := fmt.Fprintf(fileHandle, "... while calculating Pi to %d digits, having completed %d digits", numberOfDigits, i)
 			check(err8)
 		}
 		// end Rick's code
@@ -130,10 +131,10 @@ func SpigotCalculation(numberOfDigits int, done chan bool) { // Rick's version d
 
 	/*
 		// ::: pi calculations finished and displayed
-		fmt.Sprintf("\nFinished.\n%s\n\n", pi))
+		fmt.Sprintf("Finished.%s", pi))
 
 		// ::: here comes our calculated pi with the decimal inserted; printed from an array that we accumulated for this purpose:
-		fmt.Sprintf("\nHere comes our calculated pi with the decimal inserted:\n\nSpigot has ended ... \n\n"))
+		fmt.Sprintf("Here comes our calculated pi with the decimal inserted:Spigot has ended ... "))
 		for _, character := range piWithInsertedDecimalPoint { // ok, because I will only execute this from window1
 			fmt.Sprintf("%s", character))
 		}
@@ -148,15 +149,15 @@ func SpigotCalculation(numberOfDigits int, done chan bool) { // Rick's version d
 			check(err1)                                                                                                             // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
 			defer fileHandle.Close()                                                                                                // It’s idiomatic to defer a Close immediately after opening a file.
 			Hostname, _ := os.Hostname()
-			_, err0 := fmt.Fprintf(fileHandle, "\n  -- Spigot -- on %s \n", Hostname)
+			_, err0 := fmt.Fprintf(fileHandle, "  -- Spigot -- on %s ", Hostname)
 			check(err0)
 			current_time := time.Now()
-			_, err6 := fmt.Fprint(fileHandle, "was run on: ", current_time.Format(time.ANSIC), "\n")
+			_, err6 := fmt.Fprint(fileHandle, "was run on: ", current_time.Format(time.ANSIC), "")
 			check(err6)
 			TotalRun := elapsed.String() // cast time durations to a String type for Fprintf "formatted print"
-			_, err7 := fmt.Fprintf(fileHandle, "Total run was %s \n", TotalRun)
+			_, err7 := fmt.Fprintf(fileHandle, "Total run was %s ", TotalRun)
 			check(err7)
-			_, err8 := fmt.Fprintf(fileHandle, "To calculate Pi to %d digits\n", numberOfDigits)
+			_, err8 := fmt.Fprintf(fileHandle, "To calculate Pi to %d digits", numberOfDigits)
 			check(err8)
 		// end Rick's code
 }
