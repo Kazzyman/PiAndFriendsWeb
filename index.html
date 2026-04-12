@@ -187,8 +187,8 @@
 
 
 <div id="console">
-    <div id="output">By Richard (Rick) Woolley.
-Back-end written in Go (golang).
+    <div id="output">By Richard (Rick) Woolley
+Back-end written in Go (golang)
 Source code available at https://github.com/Kazzyman/PiAndFriendsWeb
 
 Select a method from the panel on the left to begin...</div>
@@ -236,7 +236,7 @@ Select a method from the panel on the left to begin...</div>
         stopCurrent(false); 
         const out = document.getElementById('output');
         const status = document.getElementById('status');
-        out.innerText = "By Richard (Rick) Woolley.\nBack-end written in Go (golang).\nSource code available at https://github.com/Kazzyman/PiAndFriendsWeb.\n\n";
+        out.innerText = "By Richard (Rick) Woolley\nBack-end written in Go (golang)\nSource code available at https://github.com/Kazzyman/PiAndFriendsWeb.\n\n";
         status.innerText = "Connecting to engine...";
 
         currentEventSource = new EventSource(`/run?method=${method}`);

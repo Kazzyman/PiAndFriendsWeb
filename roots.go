@@ -10,6 +10,8 @@ import (
 
 // @formatter:off
 
+// TODO share with Claude. Ask, is this cool or what. 
+
 var (
 	pairsSlice []Pairs
 	mathSqrtCheat            float64
@@ -65,10 +67,10 @@ func xRootOfy(radical2or3 int, workPiece int, webPrint func(string)) {
 		}
 		indx = i // save/copy to a wider scope for later use outside this loop
 	}
-	fmt.Println("Loop completed at index:", indx) // Debug
+	fmt.Println("Loop completed at index:", indx) // ::: debug to console.
 
 	// ::: Show the final result
-	webPrint(fmt.Sprintf("Entering result block, mathSqrtCheat 'square': %v, mathCbrtCheat 'cube': %v", mathSqrtCheat, mathCbrtCheat)) // Debug
+	webPrint(fmt.Sprintf("Entering result block, mathSqrtCheat 'square': %v, mathCbrtCheat 'cube': %v", mathSqrtCheat, mathCbrtCheat)) 
 	// ::: "Entering result block ... "
 
 	t_s2 := time.Now()
@@ -89,32 +91,32 @@ func xRootOfy(radical2or3 int, workPiece int, webPrint func(string)) {
 		fmt.Fprint(fileHandle, "was run on: ", time.Now().Format(time.ANSIC), "")
 		fmt.Fprintf(fileHandle, "%d was total Iterations ", indx)
 
-		fmt.Println("Sorting results...") // Debug
+		fmt.Println("Sorting results...") // ::: debug to console 
 		sort.Slice(sortedResults, func(i, j int) bool { return sortedResults[i].pdiff < sortedResults[j].pdiff })
-		fmt.Println("Sorted results, length:", len(sortedResults)) // Debug
+		fmt.Println("Sorted results, length:", len(sortedResults)) // ::: debug to console
 
 		if len(sortedResults) > 0 {
 			if radical2or3 == 2 {
 				result := fmt.Sprintf("%0.9f, it's the best approximation for the Square Root of %d", sortedResults[0].result, workPiece)
-				fmt.Println("Updating GUI with:", result) // Debug
+				fmt.Println("Updating GUI with:", result) // ::: debug to console
 				webPrint(result)
-				fmt.Println("GUI updated, printing to console...") // Debug
+				fmt.Println("GUI updated, printing to console...") // ::: debug to console
 				webPrint(fmt.Sprintf("%s", result))
 				// webPrint(fmt.Sprintf("Square-root Result is: %s", result))
-				fmt.Println("Writing to file...") // Debug
+				fmt.Println("Writing to file...") // ::: debug to console
 				fmt.Fprintf(fileHandle, "%s ", result)
-				fmt.Println("File written") // Debug
+				fmt.Println("File written") // ::: debug to console
 			}
 			if radical2or3 == 3 {
 				result := fmt.Sprintf("%0.9f, it's the best approximation for the Cube Root of %d", sortedResults[0].result, workPiece) //  ::: todo, This seems to run/print twice?
-				fmt.Println("Updating GUI with:", result) // Debug
+				fmt.Println("Updating GUI with:", result) // ::: debug to console
 				webPrint(result)
-				fmt.Println("GUI updated, printing to console...") // Debug
+				fmt.Println("GUI updated, printing to console...") // ::: debug to console
 				webPrint(fmt.Sprintf("%s", result))
 				// webPrint(fmt.Sprintf("Cube-root Result is: %s", result))
-				fmt.Println("Writing to file...") // Debug
+				fmt.Println("Writing to file...") // ::: debug to console
 				fmt.Fprintf(fileHandle, "%s ", result)
-				fmt.Println("File written") // Debug
+				fmt.Println("File written") // ::: debug to console
 			}
 		} else {
 			webPrint(fmt.Sprintf("No results found within precision %d after %d iterations", precisionOfRoot, indx))
@@ -125,7 +127,7 @@ func xRootOfy(radical2or3 int, workPiece int, webPrint func(string)) {
 		// fmt.Fprintf(fileHandle, "Total run was %s  ", TotalRun)
 		webPrint(fmt.Sprintf("Calculation completed in %s", elapsed_s2))
 	} else {
-		fmt.Println("Skipped result block due to perfect result detection") // Debug
+		fmt.Println("Skipped result block due to perfect result detection") // ::: debug to console
 	}
 }
 
@@ -163,7 +165,7 @@ func readPairsSlice(i int, startBeforeCall time.Time, radical2or3, workPiece int
 				webPrint(fmt.Sprintf(" The %d root of %d is %0.33f", radical2or3, workPiece, float64(rootOfProspectivePHitOnLargeSide)/float64(oneReadOfSmallerRoot)))
 
 				mathCbrtCheat = math.Cbrt(float64(workPiece))
-				break
+				break // TODO is this supposed to be here, see the remaining ifs? 
 			}
 			if diffOfSmaller == 0 {
 				fmt.Println(colorCyan, " The", radical2or3, "root of", workPiece, "is", colorGreen,
@@ -172,7 +174,7 @@ func readPairsSlice(i int, startBeforeCall time.Time, radical2or3, workPiece int
 
 				mathSqrtCheat = math.Sqrt(float64(workPiece)) // ::: I cheated? Yea, a bit. But only in order to generate verbiage to print re a perfect root having been found 
 				mathCbrtCheat = math.Cbrt(float64(workPiece))
-				break
+				break // TODO is this supposed to be here, see the remaining ifs? 
 			}
 
 			if diffOfLarger < precisionOfRoot {
@@ -181,8 +183,8 @@ func readPairsSlice(i int, startBeforeCall time.Time, radical2or3, workPiece int
 
 				sortedResults = append(sortedResults, Results{result: result, pdiff: pdiff})
 
-				webPrint(fmt.Sprintf("Found large prospect at index %d: result=%f, diff=%d", i, result, diffOfLarger)) // Debug
-				// break
+				webPrint(fmt.Sprintf("Found large prospect at index %d: result=%f, diff=%d", i, result, diffOfLarger)) 
+				// break // was apparenly here, but is now on the next line? // TODO ?
 				if diffOfLarger < 2 {break}
 			}
 			if diffOfSmaller < precisionOfRoot {
@@ -191,9 +193,9 @@ func readPairsSlice(i int, startBeforeCall time.Time, radical2or3, workPiece int
 
 				sortedResults = append(sortedResults, Results{result: result, pdiff: pdiff})
 
-				webPrint(fmt.Sprintf("Found small prospect at index %d: result=%f, diff=%d", i, result, diffOfSmaller)) // Debug
-				webPrint(fmt.Sprintf("Found small prospect at index %d: result=%f, diff=%d", i, result, diffOfSmaller)) // Debug
-				// break
+				webPrint(fmt.Sprintf("Found small prospect at index %d: result=%f, diff=%d", i, result, diffOfSmaller)) 
+				webPrint(fmt.Sprintf("Found small prospect at index %d: result=%f, diff=%d", i, result, diffOfSmaller)) 
+				// break // was apparenly here, but is now on the next line? // TODO ?
 				if diffOfSmaller < 2 {break}
 			}
 
@@ -202,7 +204,7 @@ func readPairsSlice(i int, startBeforeCall time.Time, radical2or3, workPiece int
 			// ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 			if diffOfLarger < precisionOfRoot { // report the prospects, their differences, and the calculated result for the Sqrt or Cbrt
 				fmt.Println("small PP is", colorCyan, oneReadOfSmallerPP, colorReset, "and, slightly on the higher side of", workPiece,
-					"* that we found a PP of", colorCyan, ProspectivePHitOnLargeSide, colorReset, "a difference of", diffOfLarger)
+					"* that we found a PP of", colorCyan, ProspectivePHitOnLargeSide, colorReset, "a difference of", diffOfLarger) // ::: debug to console
 				webPrint(fmt.Sprintf("small PP is %d and, slightly on the higher side of %d * that we found a PP of %d a difference of %d", oneReadOfSmallerPP, workPiece, ProspectivePHitOnLargeSide, diffOfLarger))
 
 				fmt.Println("the ", radical2or3, " root of ", workPiece, " is calculated as ", colorGreen,
@@ -238,6 +240,7 @@ func readPairsSlice(i int, startBeforeCall time.Time, radical2or3, workPiece int
 					fmt.Println(elapsed2.Seconds(), "Seconds have elapsed ... working ...")
 					webPrint(fmt.Sprintf("%0.4f Seconds have elapsed ... working ...", elapsed2.Seconds()))
 				}
+				// TODO no break here?
 			}
 
 			// smaller side section: ----------------------------------------------------------------------------------------------------------------------------------------
@@ -283,7 +286,7 @@ func readPairsSlice(i int, startBeforeCall time.Time, radical2or3, workPiece int
 					webPrint(fmt.Sprintf("%0.4f Seconds have elapsed ... working ...", elapsed2.Seconds()))
 				}
 			}
-			break
+			break // TODO resonsider this, and the preceding if
 		}
 	}
 }
@@ -291,17 +294,8 @@ func readPairsSlice(i int, startBeforeCall time.Time, radical2or3, workPiece int
 // handlePerfectSquaresAndCubes reports perfect squares/cubes to file and UI
 func handlePerfectSquaresAndCubes(TimeOfStartFromTop time.Time, radical2or3, workPiece int, webPrint func(string)) {
 	if diffOfLarger == 0 || diffOfSmaller == 0 {
-		t_s1 := time.Now()
-		elapsed_s1 := t_s1.Sub(TimeOfStartFromTop)
-
-		fileHandle, err1 := os.OpenFile("dataLog-From_calculate-pi-and-friends.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-		check(err1)
-		defer fileHandle.Close()
-
-		Hostname, _ := os.Hostname()
-		fmt.Fprintf(fileHandle, "  -- %d root of %d by a ratio of PerfectProducts -- selection #%d on %s ", radical2or3, workPiece, 1, Hostname)
-		fmt.Fprint(fileHandle, "was run on: ", time.Now().Format(time.ANSIC), "")
-		fmt.Fprintf(fileHandle, "Total run was %s  ", elapsed_s1.String())
+		// t_s1 := time.Now()
+		// elapsed_s1 := t_s1.Sub(TimeOfStartFromTop)
 
 		if radical2or3 == 2 {
 			result := fmt.Sprintf("Perfect square: %v is the %d root of %d", mathSqrtCheat, radical2or3, workPiece)
@@ -310,7 +304,6 @@ func handlePerfectSquaresAndCubes(TimeOfStartFromTop time.Time, radical2or3, wor
 		if radical2or3 == 3 {
 			result := fmt.Sprintf("Perfect cube: %0.0f is the %d root of %d", mathCbrtCheat, radical2or3, workPiece)
 			webPrint(result)
-			// fmt.Fprintf(fileHandle, "the %d root of %d is %0.0f ", radical2or3, workPiece, mathCbrtCheat)
 		}
 	}
 }
