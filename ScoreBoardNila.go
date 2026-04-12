@@ -7,6 +7,9 @@ import (
 	"time"
 )
 
+// TODO I have this file from an old CLI interface app that was subsequently adapted for a Fyne app, and now I want to adapt it to an existing web app ...
+// TODO ... I have included main.go and index.html from said web app.
+
 // Adapted nifty_scoreBoard for Fyne GUI
 func nifty_scoreBoardG(done chan bool, webPrint func(string)) float64 {
 	usingBigFloats = false // Unused in this version, kept for compatibility
@@ -36,7 +39,7 @@ func nifty_scoreBoardG(done chan bool, webPrint func(string)) float64 {
 			return <-pichan
 		case <-done:
 			ticker.Stop()
-			fmt.Print("Terminal Output:Aborted by user.")
+			webPrint("Terminal Output:Aborted by user.")
 			webPrint("Scoreboard aborted via done channel")
 			return 0.0 // Indicate abort
 		}
@@ -99,10 +102,7 @@ func nilakanthaTermG(ch chan float64, k float64) {
 .
 .
 .
-.
 . below are the originals for comparison and documentation
-.
-.
 .
 .
 .
@@ -142,8 +142,8 @@ func nifty_scoreBoard(webPrint func(string), done chan bool) float64 { // case 4
 			webPrint("Program done calculating Pi.")
 			os.Exit(0)
 		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
-			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
-			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
+			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed.
+			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes.
 			webPrint("Goroutine Monty for-loop (1 of 2) is being terminated by select case finding the done channel to be already closed")
 			return 0.0 // Exit the goroutine
 		// If the user interrupts the program (Ctrl+C) we end the
@@ -185,15 +185,15 @@ func printCalculationSummary(webPrint func(string)) {
 	webPrint(ANSIClearScreenSequence)
 	fmt.Println(ANSIFirstSlotScreenSequence, "Computed Value of Pi:\t\t", <-pichan)
 	fmt.Println(ANSISecondSlotScreenSequence, "# of Nilakantha Terms:\t\t", termsCount)
-	/* 
+	/*
 		webPrint(ANSIFirstSlotScreenSequence, "Computed Value of Pi:\t\t", <-pichan) // too many arguments in call to webPrint, have (string, string, float64), want (string)
 		webPrint(ANSISecondSlotScreenSequence, "# of Nilakantha Terms:\t\t", termsCount) // too many arguments in call to webPrint, have (string, string, int), want (string)
-	 */
-	
-	/* 	
-	fmt.Print(ANSIClearScreenSequence)
-	fmt.Println(ANSIFirstSlotScreenSequence, "Computed Value of Pi:\t\t", <-pichan)
-	fmt.Println(ANSISecondSlotScreenSequence, "# of Nilakantha Terms:\t\t", termsCount) 
+	*/
+
+	/*
+		fmt.Print(ANSIClearScreenSequence)
+		fmt.Println(ANSIFirstSlotScreenSequence, "Computed Value of Pi:\t\t", <-pichan)
+		fmt.Println(ANSISecondSlotScreenSequence, "# of Nilakantha Terms:\t\t", termsCount)
 	*/
 }
 
@@ -206,8 +206,8 @@ func pi_nf(n int, done chan bool, webPrint func(string)) float64 {
 	for k := 1; k <= n; k++ {
 		select {
 		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
-			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
-			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
+			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed.
+			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes.
 			webPrint("Goroutine Monty for-loop (1 of 2) is being terminated by select case finding the done channel to be already closed")
 			return f // Exit the goroutine
 		default:
@@ -221,8 +221,8 @@ func pi_nf(n int, done chan bool, webPrint func(string)) float64 {
 	for k := 1; k <= n; k++ {
 		select {
 		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
-			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
-			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
+			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed.
+			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes.
 			webPrint("Goroutine Monty for-loop (1 of 2) is being terminated by select case finding the done channel to be already closed")
 			return f // Exit the goroutine
 		default:

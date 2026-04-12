@@ -112,6 +112,10 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
             NilakanthaBig(iters, precision, done, func(s string) {
                 outputChan <- s
             })
+		case "nilakantha_classic":
+            nifty_scoreBoardWeb(done, func(s string) {
+                outputChan <- s
+            })
         default:
             outputChan <- "Unknown method requested."
         }

@@ -35,7 +35,7 @@
         #output {
             flex-grow: 1;
             padding: 25px;
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
             font-size: 14px;
             line-height: 1.5;
             color: #89ddff;
@@ -166,6 +166,17 @@
         &pi; = 3 + 4/(2&times;3&times;4) - 4/(4&times;5&times;6) + 4/(6&times;7&times;8) ...
         <br>High-precision convergence by Nilakantha Somayaji
     </button>
+
+    <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
+
+
+       <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
+    <button class="btn" style="background: #f7a35c; color: #1a1b26;" onclick="start('nilakantha_classic')">
+        <strong>Nilakantha Classic (Concurrent)</strong><br>
+        The original concurrent scoreboard version.<br>
+        5,000 terms, one goroutine per term, live ticker updates.<br>
+        &pi; = 3 + 4/(2&times;3&times;4) - 4/(4&times;5&times;6) + ...
+    </button>
     
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
     <button class="btn" style="background: #f7768e; color: white;" onclick="stopCurrent()">Stop/Clear Calculation</button>
@@ -218,15 +229,26 @@
 
         currentEventSource = new EventSource(`/run?method=${method}`);
 
-        currentEventSource.onmessage = (e) => {
+         currentEventSource.onmessage = (e) => {
             status.innerText = "Engine streaming...";
-            if (e.data.length === 1) {
-                out.innerText += e.data;
+            const data = e.data;
+ 
+            if (data.startsWith("UPDATE:")) {
+                // Overwrite the last line in place (live scoreboard ticker)
+                const text = data.slice(7); // strip "UPDATE:" prefix
+                const lines = out.innerText.split("\n");
+                // Find and replace the last non-empty line
+                let i = lines.length - 1;
+                while (i > 0 && lines[i].trim() === "") i--;
+                lines[i] = text;
+                out.innerText = lines.join("\n");
             } else {
-                out.innerText += "\n" + e.data + "\n";
+                // Normal append
+                out.innerText += "\n" + data;
             }
             out.scrollTop = out.scrollHeight;
         };
+ 
 
         currentEventSource.onerror = () => {
             status.innerText = "Connection closed (Calculation Complete).";

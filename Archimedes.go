@@ -60,7 +60,6 @@ func ArchimedesBig(webPrint func(string)) {
 	numberOfSides.SetPrec(uint(precision))
 	webPrint("Then, we do some initial assignments and calculations (as per above):")
 	
-	
 	// ::: initial calculation 
 	numberOfSides.Mul(numberOfSides, big.NewFloat(2))
 	s1_2.Quo(s1, big.NewFloat(2))
