@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+// Adapted by Richard Woolley with a lot of help from Claude.
+
 const piReference = "3.14159265358979323846"
 
 func countCorrectDigits(f float64) int {

@@ -170,24 +170,36 @@
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
 
-       <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
-    <button class="btn" style="background: #f7a35c; color: #1a1b26;" onclick="start('nilakantha_classic')">
-        <strong>Nilakantha Classic (Concurrent)</strong><br>
-        The original concurrent scoreboard version.<br>
-        5,000 terms, one goroutine per term, live ticker updates.<br>
-        &pi; = 3 + 4/(2&times;3&times;4) - 4/(4&times;5&times;6) + ...
-    </button>
+     <button class="btn" style="background: #9ece6a; color: #1a1b26;" onclick="start('nilakantha_classic')">
+    Nilakantha Somayaji's Alternating Series<br>(circa 1530)<br>a Concurrent Two-Phase Precision Climb<br>
+    Phase 1: float64, 5,000 goroutines, milestone broadcast as each decimal digit locks in<br>
+    Phase 2: big.Float · 512-bit · 15,000 terms · pushes past the float64 wall into genuine arbitrary precision<br>
+    <br>
+    π = 3 + 4/(2·3·4) − 4/(4·5·6) + 4/(6·7·8) − ···<br>
+    Kerala school of astronomy and mathematics · predates Newton by 150 years
+</button>
     
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
     <button class="btn" style="background: #f7768e; color: white;" onclick="stopCurrent()">Stop/Clear Calculation</button>
 </div>
 
+
+
+
 <div id="console">
-    <div id="status" style="padding: 10px 25px 0 25px; color: #7aa2f7; font-size: 12px; font-style: italic;">
+    <div id="output">By Richard (Rick) Woolley.
+Back-end written in Go (golang).
+Source code available at https://github.com/Kazzyman/PiAndFriendsWeb
+
+Select a method from the panel on the left to begin...</div>
+    <div id="status" style="padding: 10px 25px 10px 25px; color: #7aa2f7; font-size: 12px; font-style: italic; flex-shrink: 0;">
         System Ready.
     </div>
-    <div id="output">By Richard (Rick) Woolley. <br>Select a method from the panel on the left to begin...</div>
 </div>
+
+
+
+
 
 <script>
     let currentEventSource = null;
@@ -224,7 +236,7 @@
         stopCurrent(false); 
         const out = document.getElementById('output');
         const status = document.getElementById('status');
-        out.innerText = "";
+        out.innerText = "By Richard (Rick) Woolley.\nBack-end written in Go (golang).\nSource code available at https://github.com/Kazzyman/PiAndFriendsWeb.\n\n";
         status.innerText = "Connecting to engine...";
 
         currentEventSource = new EventSource(`/run?method=${method}`);
@@ -269,6 +281,10 @@
             document.getElementById('output').innerText = "";
         }
     }
+
+    window.onload = () => {
+    document.getElementById('status').innerText = "System Ready.";
+};
 </script>
 </body>
 </html>
