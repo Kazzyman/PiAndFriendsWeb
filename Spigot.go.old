@@ -141,7 +141,7 @@ func SpigotCalculation(numberOfDigits int, done chan bool) { // Rick's version d
 	 */
 
 /*
-	// Rick's code ::: File prints
+	// Rick's orignal code ::: File prints
 		t := time.Now()
 		elapsed := t.Sub(start)
 		// log stats to a log ::: file

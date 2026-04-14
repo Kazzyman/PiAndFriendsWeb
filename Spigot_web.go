@@ -139,7 +139,7 @@ func TheSpigotWeb(numberOfDigits int, done chan bool, webPrint func(string)) {
 	webPrint(boxSep(bw))
 	webPrint(boxLine("  RUN 2 COMPLETE                              ", bw))
 	webPrint(boxLine(fmt.Sprintf("  %d digits of Pi delivered twice           ", numberOfDigits), bw))
-	webPrint(boxLine("  Integer arithmetic only. No floats harmed.  ", bw))
+	webPrint(boxLine("  Integer arithmetic only. No floating point numbers were used in this production. ", bw))
 	webPrint(boxSep(bw))
 }
 
@@ -463,7 +463,7 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), delay
 					webPrint("  | every one of them to zero.                       |")
 					webPrint("  | They resolved to 999999. Truth confirmed.        |")
 					webPrint("  |                                                  |")
-					webPrint("  | Feynman: 'nine nine nine nine nine nine...        |")
+					webPrint("  | Feynman: 'nine nine nine nine nine nine...       |")
 					webPrint("  |           ...and so on!'                         |")
 					webPrint("  +--------------------------------------------------+")
 					webPrint("")
