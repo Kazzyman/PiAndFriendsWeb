@@ -32,7 +32,7 @@ func SpigotCalculation(numberOfDigits int, done chan bool) { // Rick's version d
 		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
 			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
 			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
-			fmt.Println("Goroutine Spigot-func for-loop (1 of 4) is being terminated by select case finding the done channel to be already closed")
+			fmt.Println("Goroutine Spigot-func for-loop (1 of 4) is being terminated by select case finding the done channel to be already closed") // debug to console.
 			return // Exit the goroutine
 		default:
 		remainders[i] = 2
@@ -44,7 +44,7 @@ func SpigotCalculation(numberOfDigits int, done chan bool) { // Rick's version d
 		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
 			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
 			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
-			fmt.Println("Goroutine Spigot-func for-loop (2 of 4) is being terminated by select case finding the done channel to be already closed")
+			fmt.Println("Goroutine Spigot-func for-loop (2 of 4) is being terminated by select case finding the done channel to be already closed") // debug to console.
 			return // Exit the goroutine
 		default:
 		carriedOver := 0
@@ -54,7 +54,7 @@ func SpigotCalculation(numberOfDigits int, done chan bool) { // Rick's version d
 			case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
 				// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
 				// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
-				fmt.Println("Goroutine Spigot-func for-loop (3 of 4) is being terminated by select case finding the done channel to be already closed")
+				fmt.Println("Goroutine Spigot-func for-loop (3 of 4) is being terminated by select case finding the done channel to be already closed") // debug to console.
 				return // Exit the goroutine
 			default:
 			remainders[j] *= 10
@@ -76,7 +76,7 @@ func SpigotCalculation(numberOfDigits int, done chan bool) { // Rick's version d
 				case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
 					// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
 					// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
-					fmt.Println("Goroutine Spigot-func for-loop (4 of 4) is being terminated by select case finding the done channel to be already closed")
+					fmt.Println("Goroutine Spigot-func for-loop (4 of 4) is being terminated by select case finding the done channel to be already closed") // debug to console.
 					return // Exit the goroutine
 				default:
 				replaced, _ := strconv.Atoi(pi[i-k : i-k+1])
@@ -140,7 +140,7 @@ func SpigotCalculation(numberOfDigits int, done chan bool) { // Rick's version d
 		}
 	 */
 
-
+/*
 	// Rick's code ::: File prints
 		t := time.Now()
 		elapsed := t.Sub(start)
@@ -161,6 +161,7 @@ func SpigotCalculation(numberOfDigits int, done chan bool) { // Rick's version d
 			check(err8)
 		// end Rick's code
 }
+		*/
 
 func delChar(s string, index int) string {
 	tmp := []rune(s)

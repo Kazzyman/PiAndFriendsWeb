@@ -48,6 +48,15 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 			ArchimedesBig(func(s string) {
 				outputChan <- s
 			})
+		case "spigot":
+            digitsStr := r.URL.Query().Get("digits")
+            digits, err := strconv.Atoi(digitsStr)
+            if err != nil || digits <= 0 {
+                digits = 1000
+            }
+            TheSpigotWeb(digits, done, func(s string) {
+                outputChan <- s
+            })
 		case "monte":
 			// We grab the gridSize from the URL, or default to "100" if empty
 			gridSize := r.URL.Query().Get("gridSize")

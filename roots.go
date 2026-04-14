@@ -10,7 +10,7 @@ import (
 
 // @formatter:off
 
-// TODO share with Claude. Ask, is this cool or what. 
+// TODO share with Claude. Ask: is this cool or what. 
 
 var (
 	pairsSlice []Pairs

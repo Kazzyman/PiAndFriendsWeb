@@ -1,0 +1,46 @@
+## 1. main.go — add inside the switch in handleCalculation()
+
+        case "spigot":
+            digitsStr := r.URL.Query().Get("digits")
+            digits, err := strconv.Atoi(digitsStr)
+            if err != nil || digits <= 0 {
+                digits = 1000
+            }
+            TheSpigotWeb(digits, done, func(s string) {
+                outputChan <- s
+            })
+
+
+## 2. index.html — sidebar button and input
+
+    <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
+    <div class="input-group">
+        <label>Spigot Digits (800+ for the Easter egg):</label>
+        <input type="number" id="spigotDigits" value="1000">
+    </div>
+    <button class="btn" style="background: #e0af68; color: #1a1b26;" onclick="runSpigot()">
+        The Spigot Algorithm -- Honest Edition<br>
+        integer arithmetic only -- no floating point anywhere<br>
+        Run 1: digits flash at full CPU speed, timed to the microsecond<br>
+        Run 2: fresh computation, uncertain digits shown as '?' in real time<br>
+        resolved on screen the moment the algorithm actually knows<br>
+        set to 800+ digits for a surprise Easter egg at position 762
+    </button>
+
+    JS to add alongside the other functions:
+
+    function runSpigot() {
+        const digits = document.getElementById('spigotDigits').value || 1000;
+        start(`spigot&digits=${digits}`);
+    }
+
+
+## 3. Remove old Spigot.go
+    delChar() is now defined in Spigot_web.go.
+    Delete your original Spigot.go to avoid a "delChar redeclared"
+    compile error.
+
+## 4. strings import
+    Spigot_web.go imports "strings" via a blank identifier at the
+    bottom. If your Go version complains, just remove that last line
+    and the "strings" import -- it is only there as a safety net.
