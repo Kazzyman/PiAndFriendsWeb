@@ -96,6 +96,10 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 			CustomSeries(func(s string) {
 				outputChan <- s
 			})
+		case "wallis":
+			JohnWallis(done, func(s string) {
+				outputChan <- s
+			})
 		case "gauss":
 			Gauss_Legendre(func(s string) {
 				outputChan <- s
@@ -121,15 +125,23 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
             NilakanthaBig(iters, precision, done, func(s string) {
                 outputChan <- s
             })
+
+
+			
+
 		case "nilakantha_classic":
             nifty_scoreBoardWeb(done, func(s string) {
                 outputChan <- s
             })
+
+
+
+
+
         default:
             outputChan <- "Unknown method requested."
         }
 
-        // --- THE FIX STARTS HERE ---
         // Instead of a plain "done <- true", we use this safe select block:
         select {
         case done <- true:

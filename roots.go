@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math"
-	"os"
 	"sort"
 	"time"
 )
@@ -82,14 +81,6 @@ func xRootOfy(radical2or3 int, workPiece int, webPrint func(string)) {
 				webPrint("Error calculating result")
 			}
 		}()
-		fileHandle, err31 := os.OpenFile("dataLog-From_calculate-pi-and-friends.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-		check(err31)
-		defer fileHandle.Close()
-
-		Hostname, _ := os.Hostname()
-		fmt.Fprintf(fileHandle, "  -- %d root of %d by a ratio of perfect Products -- on %s ", radical2or3, workPiece, Hostname)
-		fmt.Fprint(fileHandle, "was run on: ", time.Now().Format(time.ANSIC), "")
-		fmt.Fprintf(fileHandle, "%d was total Iterations ", indx)
 
 		fmt.Println("Sorting results...") // ::: debug to console 
 		sort.Slice(sortedResults, func(i, j int) bool { return sortedResults[i].pdiff < sortedResults[j].pdiff })
@@ -103,9 +94,6 @@ func xRootOfy(radical2or3 int, workPiece int, webPrint func(string)) {
 				fmt.Println("GUI updated, printing to console...") // ::: debug to console
 				webPrint(fmt.Sprintf("%s", result))
 				// webPrint(fmt.Sprintf("Square-root Result is: %s", result))
-				fmt.Println("Writing to file...") // ::: debug to console
-				fmt.Fprintf(fileHandle, "%s ", result)
-				fmt.Println("File written") // ::: debug to console
 			}
 			if radical2or3 == 3 {
 				result := fmt.Sprintf("%0.9f, it's the best approximation for the Cube Root of %d", sortedResults[0].result, workPiece) //  ::: todo, This seems to run/print twice?
@@ -114,9 +102,6 @@ func xRootOfy(radical2or3 int, workPiece int, webPrint func(string)) {
 				fmt.Println("GUI updated, printing to console...") // ::: debug to console
 				webPrint(fmt.Sprintf("%s", result))
 				// webPrint(fmt.Sprintf("Cube-root Result is: %s", result))
-				fmt.Println("Writing to file...") // ::: debug to console
-				fmt.Fprintf(fileHandle, "%s ", result)
-				fmt.Println("File written") // ::: debug to console
 			}
 		} else {
 			webPrint(fmt.Sprintf("No results found within precision %d after %d iterations", precisionOfRoot, indx))

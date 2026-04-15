@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"time"
 )
@@ -159,26 +158,7 @@ webPrint("I am here in JW")
 				LinesPerSecond = (LinesPerIter * iterFloat64) / elapsed.Seconds()
 				formattedLinesPerSecond := formatInt64WithThousandSeparators(int64(LinesPerSecond)) // .Seconds() returns a float64
 				webPrint(fmt.Sprintf("Aprox %s lines of code were executed per second ", formattedLinesPerSecond))
-	
-				// store reults in a log file which can be displayed from within the program by selecting option #12
-				fileHandle, err1 := os.OpenFile("dataLog-From_calculate-pi-and-friends.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-				check(err1)                                                                                                             // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-				defer fileHandle.Close()                                                                                                // It’s idiomatic to defer a Close immediately after opening a file.
-				Hostname, _ := os.Hostname()
-				_, err0 := fmt.Fprintf(fileHandle, "  -- John Wallis -- on %s ", Hostname)
-				check(err0)
-				current_time := time.Now()
-				_, err6 := fmt.Fprint(fileHandle, "was run on: ", current_time.Format(time.ANSIC), "")
-				check(err6)
-				_, err2 := fmt.Fprintf(fileHandle, "%s was Lines/Second  ", formattedLinesPerSecond)
-				check(err2)
-				_, err4 := fmt.Fprintf(fileHandle, "%.02f was Iterations/Seconds  ", iterFloat64/elapsed.Seconds())
-				check(err4)
-				_, err5 := fmt.Fprintf(fileHandle, "%e was total Iterations  ", iterFloat64)
-				check(err5)
-				TotalRun := elapsed.String()                                         // cast time durations to a String type for Fprintf "formatted print"
-				_, err7 := fmt.Fprintf(fileHandle, "Total run was %s  ", TotalRun) // add total runtime of this calculation
-				check(err7)
+
 			} // ifs
 		} // select
 	} // end of first for loop
@@ -320,25 +300,6 @@ webPrint("I am here in JW")
 					formattedLinesPerSecond := formatInt64WithThousandSeparators(int64(LinesPerSecond)) // .Seconds() returns a float64
 					webPrint(fmt.Sprintf("Aprox %s lines of code were executed per second ", formattedLinesPerSecond))
 	
-					// store reults in a log file which can be displayed from within the program by selecting option #12
-					fileHandle, err1 := os.OpenFile("dataLog-From_calculate-pi-and-friends.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-					check(err1)                                                                                                             // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-					defer fileHandle.Close()                                                                                                // It’s idiomatic to defer a Close immediately after opening a file.
-					Hostname, _ := os.Hostname()
-					_, err0 := fmt.Fprintf(fileHandle, "  -- John Wallis (cont.) -- on %s ", Hostname)
-					check(err0)
-					current_time := time.Now()
-					_, err6 := fmt.Fprint(fileHandle, "was run on: ", current_time.Format(time.ANSIC), "")
-					check(err6)
-					_, err2 := fmt.Fprintf(fileHandle, "%s was Lines/Second  ", formattedLinesPerSecond)
-					check(err2)
-					_, err4 := fmt.Fprintf(fileHandle, "%.02f was Iterations/Seconds  ", iterFloat64/elapsed.Seconds())
-					check(err4)
-					_, err5 := fmt.Fprintf(fileHandle, "%e was total Iterations  ", iterFloat64)
-					check(err5)
-					TotalRun := elapsed.String()                                         // cast time durations to a String type for Fprintf "formatted print"
-					_, err7 := fmt.Fprintf(fileHandle, "Total run was %s  ", TotalRun) // add total runtime of this calculation
-					check(err7)
 				}
 		} // end of select
 	} // end of for interInt64 < 40B
@@ -347,23 +308,3 @@ calculating = false
 return π
 
 } // end of JohnWallis()
-
-func JohnWallis_grok(updateOutput func(string), done chan bool, webPrint func(string)) float64 {
-	result := 2.0
-	iterations := 1_000_000 // Reduced for testing; revert to 40_000_000_000 for full run
-	for n := 1; n <= iterations; n++ {
-		select {
-		case <-done:
-			updateOutput("Wallis stopped early")
-			return result
-		default:
-			term := float64(2*n) / float64(2*n-1) * float64(2*n) / float64(2*n+1)
-			result *= term
-			if n%100_000 == 0 {
-				// updateOutput(webPrint(fmt.Sprintf("Iteration %d: π ≈ %.10f", n, result))) // ::: todo: CHECK THIS OUT ---------------------------
-				webPrint(fmt.Sprintf("Iteration %d: π ≈ %.10f", n, result)) // ::: todo: CHECK THIS OUT ---------------------------
-			}
-		}
-	}
-	return result
-}

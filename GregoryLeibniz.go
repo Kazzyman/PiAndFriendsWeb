@@ -2,20 +2,12 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"time"
 )
 
 // @formatter:off
 
 func GregoryLeibniz(webPrint func(string), done chan bool) {
-	// Open a log file 
-	fileHandle, err1 := os.OpenFile("dataLog-From_calculate-pi-and-friends.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-	check(err1)                              // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-		defer func(fileHandle *os.File) {   // It’s idiomatic to defer a Close immediately after opening a file.
-			err := fileHandle.Close()
-			if err != nil {}
-		}(fileHandle)
 
 	usingBigFloats = false // π = (4/1) - (4/3) + (4/5) - (4/7) + (4/9) - (4/11) + (4/13) - (4/15) ...
 		webPrint("You selected Gregory-Leibniz formula  :  π = 4 * ( 1 - 1/3 + 1/5 - 1/7 + 1/9 ...) ")
@@ -109,25 +101,7 @@ func GregoryLeibniz(webPrint func(string), done chan bool) {
 				webPrint(fmt.Sprintf("at aprox %0.2f lines of code per iteration ...", LinesPerIter))
 				LinesPerSecond = (LinesPerIter * iterFloat64) / elapsed.Seconds() // .Seconds() returns a float64
 				webPrint(fmt.Sprintf("Aprox %.0f lines of code were executed per second ", LinesPerSecond))
-				
-				// store results in a log file 
-					Hostname, _ := os.Hostname()
-					current_time := time.Now()
-					TotalRun := elapsed.String()   // cast time duration to a String type for Fprintf "formatted print"
-				
-					// to ::: file
-						_, err0 := fmt.Fprintf(fileHandle, "  -- Gottfried Wilhelm Leibniz --  on %s ", Hostname)
-							check(err0)
-						_, err6 := fmt.Fprint(fileHandle, "was run on: ", current_time.Format(time.ANSIC), "")
-							check(err6)
-						_, err2 := fmt.Fprintf(fileHandle, "%.0f was Lines/Second  ", LinesPerSecond)
-							check(err2)
-						_, err4 := fmt.Fprintf(fileHandle, "%e was Iterations/Seconds  ", iterFloat64/elapsed.Seconds())
-							check(err4)
-						_, err5 := fmt.Fprintf(fileHandle, "%e was total Iterations  ", iterFloat64)
-							check(err5)
-						_, err7 := fmt.Fprintf(fileHandle, "Total runTime was %s ", TotalRun) // add total runtime of this calculation
-							check(err7)
+
 			} // end of last if
 			}
 	} // end of first for loop

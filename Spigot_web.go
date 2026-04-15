@@ -7,8 +7,9 @@ package main
 // Original Spigot algorithm: sourced from GitHub, substantially rewritten
 // by Richard (Rick) Woolley.
 //
-// Web adaptation, two-run architecture, event-recording system, honest
-// uncertainty display, and Feynman Point detection:
+// Web adaptation, two-run architecture, honest uncertainty display,
+// adaptive human-appreciation delay, Feynman Point detection, and
+// colored output protocol:
 // designed and implemented by Claude Sonnet (Anthropic), in collaboration
 // with Richard Woolley, April 2026.
 //
@@ -17,56 +18,51 @@ package main
 //   executions of the full Spigot computation. Nothing is reused,
 //   replayed, or simulated between them.
 //
-//   Run 1 -- Full speed: digits stream to the screen as fast as the
-//            SSE connection allows. The user sees the complete answer
-//            and the wall-clock time it took.
+//   Run 1 -- Full speed: digits sent as plain appends (no UPDATE:).
+//            No in-place updating needed since all digits are final.
 //
-//   Run 2 -- Honest edition: the algorithm runs again from scratch.
-//            This time, every digit the algorithm is genuinely uncertain
-//            about is shown as '?' on screen. The uncertainty is real --
-//            when the Spigot encounters a 9 it cannot yet know if a carry
-//            from later arithmetic will flip it to 0. The '?' is replaced
-//            with the true digit the moment the algorithm resolves it.
-//            No fakery. No simulation. Every '?' represents a moment the
-//            algorithm itself did not know the answer.
+//   Run 2 -- Honest edition: ALL digit line output goes via UPDATE:,
+//            which overwrites the current line in place. When a line
+//            is complete, a plain empty string "" is sent to open a
+//            new blank row, then the next digit starts a fresh UPDATE:
+//            sequence on that new row.
+//            This avoids the doubling bug where an UPDATE: and a plain
+//            append both show the same content.
 //
-//   The Feynman Point Easter egg (six consecutive 9s at decimal position
-//   762) is revealed only in Run 2, where the user can watch the six '?'
-//   marks accumulate and then resolve to '999999' in real time; real-slow time.
+// Message protocol:
+//   "UPDATE:text"        -- overwrite last line in place
+//   "UPDATE:HASRED:text" -- overwrite last line, color '?' red
+//   "COLOR:name:text"    -- append new colored line
+//   ""  (empty)          -- append blank row (opens new line for UPDATE:)
+//   plain text           -- append as permanent new line (Run 1 only)
 
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 )
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 func TheSpigotWeb(numberOfDigits int, done chan bool, webPrint func(string)) {
-	const bw = 50
+	const bw         = 50
+	const targetSecs = 14.0
 
-	webPrint(boxSep(bw))
-	webPrint(boxLine("  THE SPIGOT ALGORITHM                        ", bw))
-	webPrint(boxLine("  Pi from integer arithmetic alone            ", bw))
-	webPrint(boxSep(bw))
-	webPrint(boxLine("  Origin : sourced from GitHub, rewritten     ", bw))
-	webPrint(boxLine("          by Richard Woolley                  ", bw))
-	webPrint(boxLine("  Method : integer arithmetic only, no floats ", bw))
-	webPrint(boxLine("  Runs   : TWO genuine independent executions ", bw))
-	webPrint(boxSep(bw))
+	webPrint("COLOR:cyan:" + boxSep(bw))
+	webPrint("COLOR:cyan:" + boxLine("  THE SPIGOT ALGORITHM                        ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  Pi from integer arithmetic alone            ", bw))
+	webPrint("COLOR:cyan:" + boxSep(bw))
+	webPrint("COLOR:cyan:" + boxLine("  Origin : sourced from GitHub, rewritten     ", bw))
+	webPrint("COLOR:cyan:" + boxLine("          by Richard Woolley                  ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  Method : integer arithmetic only, no floats ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  Runs   : TWO genuine independent executions ", bw))
+	webPrint("COLOR:cyan:" + boxSep(bw))
 	webPrint("")
 
-	// ── RUN 1: full speed ─────────────────────────────────────────────────────
-	//
-	// A complete, genuine execution of the Spigot algorithm.
-	// Digits are streamed to the screen as fast as the SSE connection
-	// allows. No delays, no uncertainty markers -- just the raw answer.
-
-	webPrint(boxSep(bw))
-	webPrint(boxLine("  RUN 1 -- Full speed                         ", bw))
-	webPrint(boxLine(fmt.Sprintf("  Computing %d digits...", numberOfDigits), bw))
-	webPrint(boxSep(bw))
+	webPrint("COLOR:yellow:" + boxSep(bw))
+	webPrint("COLOR:yellow:" + boxLine("  RUN 1 -- Full speed                         ", bw))
+	webPrint("COLOR:yellow:" + boxLine(fmt.Sprintf("  Computing %d digits...", numberOfDigits), bw))
+	webPrint("COLOR:yellow:" + boxSep(bw))
 	webPrint("")
 
 	run1Start := time.Now()
@@ -74,85 +70,86 @@ func TheSpigotWeb(numberOfDigits int, done chan bool, webPrint func(string)) {
 	run1Time  := time.Since(run1Start)
 
 	if !ok {
-		webPrint("  !! Aborted.")
+		webPrint("COLOR:red:  !! Aborted.")
 		return
 	}
 
+	normalDigits := numberOfDigits - 69
+	if normalDigits < 1 {
+		normalDigits = numberOfDigits
+	}
+	baseDelayMs := (targetSecs * 0.80 * 1000.0) / float64(normalDigits)
+	if baseDelayMs < 1 {
+		baseDelayMs = 1
+	}
+	baseDelay := time.Duration(baseDelayMs * float64(time.Millisecond))
+
 	webPrint("")
-	webPrint(boxSep(bw))
-	webPrint(boxLine("  RUN 1 COMPLETE                              ", bw))
-	webPrint(boxLine(fmt.Sprintf("  %d digits in %s",
+	webPrint("COLOR:yellow:" + boxSep(bw))
+	webPrint("COLOR:yellow:" + boxLine("  RUN 1 COMPLETE                              ", bw))
+	webPrint("COLOR:yellow:" + boxLine(fmt.Sprintf("  %d digits in %s",
 		numberOfDigits, run1Time.Round(time.Microsecond)), bw))
-	webPrint(boxSep(bw))
+	webPrint("COLOR:yellow:" + boxSep(bw))
 	webPrint("")
 	webPrint("  Or was that too fast to follow?")
 	webPrint("")
-	webPrint("  No matter. We will now run the algorithm again,")
-	webPrint("  this time with a human appreciation delay of 50ms")
-	webPrint("  per digit.")
+	webPrint("  No matter. We will now run the algorithm again --")
+	webPrint("  a fresh computation, not a replay of Run 1 --")
+	webPrint("  with a delay calibrated to this platform so that")
+	webPrint(fmt.Sprintf("  the full run takes approximately %.0f seconds.", targetSecs))
 	webPrint("")
-	webPrint("  This second run will also show you something the")
-	webPrint("  first run was hiding. The Spigot algorithm is not")
-	webPrint("  always certain about its own output. When it")
-	webPrint("  encounters a 9, it cannot yet know if that digit")
-	webPrint("  is correct -- a carry from later arithmetic could")
-	webPrint("  flip it to 0.")
+	webPrint("  This time we will show you something the fast run")
+	webPrint("  was hiding. The Spigot algorithm is not always")
+	webPrint("  certain about its own output.")
 	webPrint("")
-	webPrint("  We will show '?' for every genuinely uncertain")
-	webPrint("  digit, and overwrite it with the truth the moment")
-	webPrint("  the algorithm itself resolves it.")
+	webPrint("  When it encounters a 9, it cannot yet know if that")
+	webPrint("  digit is correct -- a carry from later arithmetic")
+	webPrint("  could flip it to 0.")
 	webPrint("")
-	webPrint("  No simulation. This is a fresh computation.")
-	webPrint("  Every '?' you see is real uncertainty, happening")
-	webPrint("  right now, in the algorithm running on the server.")
+	webPrint("COLOR:red:  Uncertain digits will appear in red as '?'.")
+	webPrint("  Each '?' is overwritten with the true digit the")
+	webPrint("  moment the algorithm itself resolves it.")
+	webPrint("")
+	webPrint("  No simulation. Every '?' is real uncertainty,")
+	webPrint("  happening right now, on the server.")
 	if numberOfDigits >= 768 {
 		webPrint("")
-		webPrint("  One more thing: keep your eyes open around")
-		webPrint("  digit 762. Something rather famous lives there.")
+		webPrint("COLOR:yellow:  One more thing: keep your eyes open around")
+		webPrint("COLOR:yellow:  digit 762. Something rather famous lives there.")
 	}
 	webPrint("")
 
-	// Dramatic pause before Run 2
 	time.Sleep(3 * time.Second)
 
-	// ── RUN 2: honest edition ─────────────────────────────────────────────────
-	//
-	// A second complete, genuine, independent execution of the full
-	// Spigot algorithm. This run streams digits with a 50ms delay and
-	// shows '?' for every digit the algorithm is currently uncertain
-	// about, resolving each one on screen the moment it is confirmed.
-
-	webPrint(boxSep(bw))
-	webPrint(boxLine("  RUN 2 -- Honest edition                     ", bw))
-	webPrint(boxLine("  Uncertainty shown as it actually occurs      ", bw))
-	webPrint(boxLine("  50ms human appreciation delay per digit      ", bw))
-	webPrint(boxSep(bw))
+	webPrint("COLOR:green:" + boxSep(bw))
+	webPrint("COLOR:green:" + boxLine("  RUN 2 -- Honest edition                     ", bw))
+	webPrint("COLOR:green:" + boxLine("  Uncertainty shown as it actually occurs      ", bw))
+	webPrint("COLOR:green:" + boxLine(fmt.Sprintf("  Base delay: %.1fms/digit, calibrated for ~%.0fs",
+		baseDelayMs, targetSecs), bw))
+	webPrint("COLOR:green:" + boxSep(bw))
 	webPrint("")
 
-	ok = spigotRun2(numberOfDigits, done, webPrint, 50*time.Millisecond)
+	ok = spigotRun2(numberOfDigits, done, webPrint, baseDelay)
 	if !ok {
-		webPrint("  !! Aborted.")
+		webPrint("COLOR:red:  !! Aborted.")
 		return
 	}
 
 	webPrint("")
-	webPrint(boxSep(bw))
-	webPrint(boxLine("  RUN 2 COMPLETE                              ", bw))
-	webPrint(boxLine(fmt.Sprintf("  %d digits of Pi delivered twice           ", numberOfDigits), bw))
-	webPrint(boxLine("  Integer arithmetic only. No floating point numbers were used in this production. ", bw))
-	webPrint(boxSep(bw))
+	webPrint("COLOR:cyan:" + boxSep(bw))
+	webPrint("COLOR:cyan:" + boxLine(fmt.Sprintf("  Spigot complete: %d digits of Pi          ", numberOfDigits), bw))
+	webPrint("COLOR:cyan:" + boxLine("  Integer arithmetic only. No floating point   ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  numbers were used in this production.        ", bw))
+	webPrint("COLOR:cyan:" + boxSep(bw))
 }
 
 // ── Run 1: full speed ─────────────────────────────────────────────────────────
-//
-// Complete independent execution of the Spigot algorithm.
-// Streams correct digits to webPrint as fast as possible, grouped
-// into lines of 50 characters.
+// Plain appends only. No UPDATE: needed since every digit is immediately final.
 
 func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool {
 	const lineWidth = 50
 
-	pi         := ""
+	pi          := ""
 	line        := ""
 	boxes       := numberOfDigits * 10 / 3
 	remainders  := make([]int, boxes)
@@ -169,7 +166,7 @@ func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool 
 		}
 	}
 
-	emit := func(ch string) {
+	addChar := func(ch string) {
 		line += ch
 		if len([]rune(line)) >= lineWidth {
 			webPrint(line)
@@ -229,16 +226,13 @@ func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool 
 		}
 
 		pi += strconv.Itoa(q)
-
-		// Insert decimal point between first and second digit
 		digitsSeen++
 		if !decInserted && digitsSeen == 2 {
-			emit(".")
+			addChar(".")
 			decInserted = true
 		}
-		emit(strconv.Itoa(q))
+		addChar(strconv.Itoa(q))
 	}
-
 	if line != "" {
 		webPrint(line)
 	}
@@ -247,25 +241,18 @@ func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool 
 
 // ── Run 2: honest edition ─────────────────────────────────────────────────────
 //
-// Second complete independent execution of the full Spigot algorithm.
-// This run streams digits with a human appreciation delay and shows
-// genuine uncertainty as it occurs:
+// All digit output uses UPDATE: so the current line is always overwritten
+// in place. When a line is complete, we send a plain "" to open a fresh
+// blank row, then the next character starts a new UPDATE: sequence on it.
 //
-//   - '?' is shown for each digit the algorithm is currently holding
-//     (because a carry might still correct it)
-//   - When the algorithm confirms the held digits are correct, the '?'
-//     marks are overwritten with their true values on screen
-//   - When a carry fires, the '?' marks are overwritten with corrected
-//     values and a carry announcement is printed
-//   - The Feynman Point (six consecutive 9s at position 762) is
-//     announced after its '??????' resolves to '999999'
-//
-// Everything shown reflects the actual state of the algorithm at that
-// moment. Nothing is simulated or replayed from Run 1.
+// This means the JS never sees the same line content as both an UPDATE:
+// and a plain append -- eliminating the doubling bug entirely.
 
-func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), delay time.Duration) bool {
-	const lineWidth  = 50
-	const feynmanLen = 6
+func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), baseDelay time.Duration) bool {
+	const lineWidth   = 50
+	const feynmanLen  = 6
+	const slowStart   = 700
+	const feynmanZone = 762
 
 	pi           := ""
 	line         := ""
@@ -273,8 +260,8 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), delay
 	boxes        := numberOfDigits * 10 / 3
 	remainders   := make([]int, boxes)
 	digitsHeld   := 0
-	pendingQs    := 0   // how many '?' are currently on the active line
-	decPos       := 0   // 1-based decimal digit position
+	pendingQs    := 0
+	decPos       := 0
 	decInserted  := false
 	digitsSeen   := 0
 	feynmanFired := false
@@ -288,16 +275,44 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), delay
 		}
 	}
 
-	updateLine := func() {
-		webPrint("UPDATE:    " + line)
+	delayFor := func(pos int) time.Duration {
+		if pos < slowStart || pos > feynmanZone+6 {
+			return baseDelay
+		}
+		t      := float64(pos-slowStart) / float64(feynmanZone-slowStart)
+		factor := 1.0 + 3.0*t
+		return time.Duration(float64(baseDelay) * factor)
 	}
 
-	flushLine := func() {
+	// show sends the current line as UPDATE:, overwriting in place.
+	// All digit output goes through here -- never via plain webPrint.
+	show := func() {
+		if pendingQs > 0 {
+			webPrint("UPDATE:HASRED:" + line)
+		} else {
+			webPrint("UPDATE:" + line)
+		}
+	}
+
+	// newRow commits the current line visually (it is already showing
+	// correctly via the last show() call) and opens a fresh blank row
+	// by sending an empty plain string. The next show() call will then
+	// overwrite that blank row with the first character of the new line.
+	newRow := func() {
+		webPrint("") // plain empty -- JS appends a blank row
+		line      = ""
+		col       = 0
+		pendingQs = 0
+	}
+
+	// flushRow commits the current line and opens a fresh row.
+	// The line is already showing correctly via the last show() call,
+	// so we just send "" to anchor it and open the next row --
+	// exactly like newRow(). Sending webPrint(line) here would cause
+	// the JS to emit the line a second time (doubling bug).
+	flushRow := func() {
 		if line != "" {
-			webPrint(line)
-			line      = ""
-			col       = 0
-			pendingQs = 0
+			newRow()
 		}
 	}
 
@@ -305,47 +320,43 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), delay
 		line += ch
 		col++
 		if col >= lineWidth {
-			flushLine()
+			show()   // show complete line via UPDATE:
+			newRow() // open next row
 		} else {
-			updateLine()
+			show()
 		}
 	}
 
-	// showQ appends a '?' to the current line representing genuine
-	// uncertainty about a digit the algorithm is currently holding.
 	showQ := func() {
 		line += "?"
 		col++
 		pendingQs++
-		if col >= lineWidth {
-			flushLine()
-		} else {
-			updateLine()
-		}
+		// Do NOT enforce lineWidth break here. pendingQs must stay intact so
+		// the ?s can be resolved in-place (to 9 or 0) before the line commits.
+		// The line may briefly exceed lineWidth while ?s are unresolved;
+		// it commits after resolution in the default or carry case.
+		show()
 	}
 
-	// resolveQs overwrites the pending '?' marks with confirmed digits,
-	// one by one from left to right, each with a brief pause.
-	// Called when the algorithm confirms held 9s are correct.
 	resolveQs := func(count int, digit rune) {
-		resolveStart := len([]rune(line)) - pendingQs
-		runes        := []rune(line)
-		for k := 0; k < count && resolveStart+k < len(runes); k++ {
+		start := len([]rune(line)) - pendingQs
+		runes := []rune(line)
+		for k := 0; k < count && start+k < len(runes); k++ {
 			select {
 			case <-done:
 				return
 			default:
 			}
-			runes[resolveStart+k] = digit
+			runes[start+k] = digit
 			line = string(runes)
-			updateLine()
-			time.Sleep(delay / 2)
-		}
-		pendingQs -= count
-		if pendingQs < 0 {
-			pendingQs = 0
+			pendingQs--
+			show()
+			time.Sleep(baseDelay / 2)
 		}
 	}
+
+	// Seed the first blank row so the first UPDATE: has somewhere to land
+	webPrint("")
 
 	for i := 0; i < numberOfDigits; i++ {
 		select {
@@ -375,9 +386,6 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), delay
 
 		switch q {
 		case 9:
-			// The algorithm has produced a 9 but cannot confirm it yet.
-			// A carry from a later iteration could still flip it to 0.
-			// Show '?' on screen -- this is genuine uncertainty.
 			digitsHeld++
 			decPos++
 			digitsSeen++
@@ -387,12 +395,9 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), delay
 			}
 			pi += "9"
 			showQ()
-			time.Sleep(delay)
+			time.Sleep(delayFor(decPos))
 
 		case 10:
-			// Carry fired. The held 9s were wrong -- they become 0s,
-			// and the digit before them is incremented.
-			// Patch the pi string (same logic as original algorithm).
 			q = 0
 			for k := 1; k <= digitsHeld; k++ {
 				select {
@@ -410,24 +415,36 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), delay
 				pi = pi[:i-k] + strconv.Itoa(replaced) + pi[i-k:]
 			}
 
-			// Announce the carry and correct the '?' marks on screen
-			if pendingQs > 0 {
-				flushLine()
-				webPrint("")
-				webPrint(fmt.Sprintf(
-					"  [CARRY at position %d] Those %d '?'s were NOT nines.",
-					decPos, pendingQs))
-				webPrint("  [CARRY] A carry propagated -- correcting to zeros...")
-				webPrint("")
-				runes        := []rune(line)
-				resolveStart := len(runes) - pendingQs
-				for k := 0; k < pendingQs && resolveStart+k < len(runes); k++ {
-					runes[resolveStart+k] = '0'
+			// Handle carry display.
+			// Save pendingQs BEFORE flushRow/newRow resets it to zero.
+			// IMPORTANT: in the spigot display model (same as Run 1), held 9s
+			// ARE displayed as 9s even when a carry fires. The carry does not
+			// flip the held 9 to 0 -- it makes the CURRENT iteration's digit 0.
+			// Run 1 shows e.g. "...9 0..." where 9 is the held digit and 0 is
+			// the carry digit. We do the same: resolve ? to 9, then emit 0.
+			savedPendingQs := pendingQs
+
+			if savedPendingQs > 0 {
+				// Resolve the ?s to 9s in-place on the current line,
+				// then commit the line before the carry message.
+				resolveQs(savedPendingQs, '9')
+				if col >= lineWidth {
+					show()
+					newRow()
 				}
-				line = string(runes)
-				updateLine()
-				time.Sleep(delay * 3)
-				pendingQs = 0
+				flushRow()
+				if savedPendingQs == 1 {
+					webPrint("COLOR:red:" + fmt.Sprintf(
+						"  [CARRY at position %d] That 9 is confirmed.", decPos))
+					webPrint("COLOR:red:  A carry fires -- the next digit in the sequence is 0.")
+				} else {
+					webPrint("COLOR:red:" + fmt.Sprintf(
+						"  [CARRY at position %d] Those %d 9s are confirmed.", decPos, savedPendingQs))
+					webPrint("COLOR:red:  A carry fires -- the next digit in the sequence is 0.")
+				}
+				time.Sleep(baseDelay * 3)
+				webPrint("") // blank line between message and following digits
+				webPrint("")
 			}
 
 			decPos++
@@ -437,41 +454,46 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), delay
 				decInserted = true
 			}
 			pi += strconv.Itoa(q)
-			appendChar(strconv.Itoa(q))
 			digitsHeld = 1
-			time.Sleep(delay)
+			appendChar(strconv.Itoa(q))
+			time.Sleep(delayFor(decPos))
 
 		default:
-			// A non-9 digit arrived. If we were holding 9s, they are
-			// now confirmed correct -- resolve the '?' marks to '9'.
 			if digitsHeld > 0 && pendingQs > 0 {
 				resolveQs(pendingQs, '9')
 
-				// Feynman Point: six or more consecutive confirmed 9s
 				if !feynmanFired && digitsHeld >= feynmanLen {
 					feynmanFired = true
-					flushLine()
+					flushRow()
 					webPrint("")
-					webPrint("  +--------------------------------------------------+")
-					webPrint("  | !! THE FEYNMAN POINT !!                          |")
-					webPrint("  | (or perhaps the Hofstadter Point?)               |")
-					webPrint("  | Six consecutive 9s at decimal position 762       |")
-					webPrint("  | ...134  999999  837...                           |")
-					webPrint("  |                                                  |")
-					webPrint("  | You just watched the algorithm hold all six as   |")
-					webPrint("  | '??????' -- because a carry could have flipped   |")
-					webPrint("  | every one of them to zero.                       |")
-					webPrint("  | They resolved to 999999. Truth confirmed.        |")
-					webPrint("  |                                                  |")
-					webPrint("  | Feynman: 'nine nine nine nine nine nine...       |")
-					webPrint("  |           ...and so on!'                         |")
-					webPrint("  +--------------------------------------------------+")
+					webPrint("COLOR:yellow:  +--------------------------------------------------+")
+					webPrint("COLOR:yellow:  | !! THE FEYNMAN POINT !!                          |")
+					webPrint("COLOR:yellow:  | (or perhaps the Hofstadter Point?)               |")
+					webPrint("COLOR:yellow:  | Six consecutive 9s at decimal position 762       |")
+					webPrint("COLOR:yellow:  | ...134  999999  837...                           |")
+					webPrint("COLOR:yellow:  |                                                  |")
+					webPrint("COLOR:yellow:  | You just watched the algorithm hold all six as   |")
+					webPrint("COLOR:yellow:  | '??????' -- because a carry could have flipped   |")
+					webPrint("COLOR:yellow:  | every one of them to zero.                       |")
+					webPrint("COLOR:yellow:  | They resolved to 999999. Truth confirmed        |")
+					webPrint("COLOR:yellow:  | in real time ... in real-slow time.              |")
+					webPrint("COLOR:yellow:  |                                                  |")
+					webPrint("COLOR:yellow:  | Feynman: 'nine nine nine nine nine nine...        |")
+					webPrint("COLOR:yellow:  |          ...and so on!'                          |")
+					webPrint("COLOR:yellow:  +--------------------------------------------------+")
 					webPrint("")
-					time.Sleep(3 * time.Second)
+					time.Sleep(4 * time.Second)
+					webPrint("") // seed blank row for digits to continue
 				}
 			}
 
 			digitsHeld = 1
+			// If resolving the ?s filled the line to lineWidth, commit it now
+			// before appending the current digit on a fresh row.
+			if col >= lineWidth {
+				show()
+				newRow()
+			}
 			decPos++
 			digitsSeen++
 			if !decInserted && digitsSeen == 2 {
@@ -480,15 +502,18 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), delay
 			}
 			pi += strconv.Itoa(q)
 			appendChar(strconv.Itoa(q))
-			time.Sleep(delay)
+			time.Sleep(delayFor(decPos))
 		}
 	}
 
-	flushLine()
+	// Commit final partial line -- cursor already shows it correctly
+	if line != "" {
+		newRow()
+	}
 	return true
 }
 
-// ── Shared helpers ────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 // delChar removes the character at index from string s.
 // Written largely by Richard Woolley.
@@ -496,15 +521,3 @@ func delChar(s string, index int) string {
 	tmp := []rune(s)
 	return string(append(tmp[0:index], tmp[index+1:]...))
 }
-
-// spigotMax returns the larger of two ints.
-// Named to avoid collision with Go 1.21+ builtin max().
-func spigotMax(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-// suppress unused import warning if strings is only used here
-var _ = strings.Repeat

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"math/big"
-	"os"
 	"time"
 )
 
@@ -12,7 +11,6 @@ func bbpFast44(webPrint func(string), digits int, done chan bool) { // case 42: 
 	webPrint(fmt.Sprintf("bbpFast46 executed with %d digits", digits))
 
 	usingBigFloats = true
-	iters_bbp := 1
 	start := time.Now()
 	// numCPU := runtime.NumCPU()
 	// runtime.GOMAXPROCS(numCPU)
@@ -64,26 +62,6 @@ func bbpFast44(webPrint func(string), digits int, done chan bool) { // case 42: 
 
 	// updateChan <- updateData{text:"%[1]*.[2]*[3]f \n", 1, n, pi} // does not work, even with the correct signature for updateChan <- updateData{text:"
 	webPrint(fmt.Sprintf("%[1]*.[2]*[3]f \n", 1, n, pi)) // n is the number of digits of pi to calculate
-
-	// log run stats to a log file
-	t := time.Now()
-	elapsed := t.Sub(start)
-	fileHandle, err1 := os.OpenFile("dataLog-From_calculate-pi-and-friends.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-	check(err1)                                                                                                             // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-	defer fileHandle.Close()                                                                                                // It’s idiomatic to defer a Close immediately after opening a file.
-	Hostname, _ := os.Hostname()
-	_, err0 := fmt.Fprintf(fileHandle, "\n  -- calculate pi using the bbp formula -- on %s \n", Hostname)
-	check(err0)
-	current_time := time.Now()
-	_, err6 := fmt.Fprint(fileHandle, "was run on: ", current_time.Format(time.ANSIC), "\n")
-	check(err6)
-	_, err4 := fmt.Fprintf(fileHandle, "%.02f was Iterations/Seconds \n", float64(iters_bbp)/elapsed.Seconds())
-	check(err4)
-	_, err5 := fmt.Fprintf(fileHandle, "%d was total Iterations \n", iters_bbp)
-	check(err5)
-	TotalRun := elapsed.String() // cast time durations to a String type for Fprintf "formatted print"
-	_, err7 := fmt.Fprintf(fileHandle, "Total run was %s \n ", TotalRun)
-	check(err7)
 
 }
 

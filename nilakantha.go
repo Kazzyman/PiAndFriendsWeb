@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"math/big"
-	"os"
 	"strings"
 )
 
@@ -31,8 +30,6 @@ var lenOfPi int
 	if iters > 80111222 {
 		webPrint("... a very long while ... working ...")
 	}
-
-	// start := time.Now()
 
 	var iterBig int
 
@@ -69,12 +66,6 @@ var lenOfPi int
 	// ::: calculate initial value  	
 	sumBig.Add(threeBig, new(big.Float).Quo(fourBig, new(big.Float).Mul(digitoneBig, new(big.Float).Mul(digittwoBig, digitthreeBig))))
 
-	fileHandleBig, err1prslc2c := os.OpenFile("big_pie_is_in_here.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-	check(err1prslc2c)           // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt // It’s idiomatic to defer a Close immediately after opening a file.
-	defer func(fileHandleBig *os.File) {
-		err := fileHandleBig.Close()
-		if err != nil {}
-	}(fileHandleBig) 
 
 	iterBig = 1
 	for iterBig < iters {
@@ -145,20 +136,11 @@ var lenOfPi int
 			webPrint("... it's been a very long while, 977,111,222 already ... why am I still working? ...")
 		}
 		}
-	} // end of the loop, the only calculating loop
-	// t := time.Now()
+	} // End of the loop, the only calculating loop
 	
 		// ::: bug hammer = do this just once; KISS
 		printThis, lenOfPi = checkPiTo100(sumBig) // all local variables defined at the top of this function 
 		printThisThen = strings.Join(printThis, "")
-
-	if lenOfPi > 55000 { // if length of pi is > 55,000 digits we have something really big
-		// print to ::: screen
-			webPrint("We have been tasked with making a lot of pie and it was sooo big it needed its own file ...")
-			webPrint("  After allowing this process to finish (you may have to continue prodding this thing along for a while) ... ")
-			webPrint("... Go have a look in /.big_pie_is_in_here.txt to find all the digits of π you had requested. ")
-
-	} else { 
 
 		webPrint(fmt.Sprintf("pi as calculated herein is: %s", printThisThen))
 
@@ -169,14 +151,9 @@ var lenOfPi int
 
 		webPrint(fmt.Sprintf("hey, rick, pi as calculated herein is: %s", printThisThen))
 		
-	}
 	webPrint("")
 
-	// print to ::: screen
 	webPrint("via Nilakantha with big floats. Written entirely by Richard Woolley")
 
-	// ::: Prepare to exit the Gregory Nilakantha method functions
-	calculating = false // Allow another method to be selected.
-	// close(done)
 	// written entirely by Richard Woolley
 } 

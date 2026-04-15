@@ -265,32 +265,10 @@ func calcPi(webPrint func(string), digits float64, start time.Time, done chan bo
 		} // end of select
 	} // end of for loop way up thar :: it prompts periodically to continue or die
 
-	/*
-	// ::: we are out of the loop, so we do the following just once:
-
-	// obtain file handle
-	fileHandleBig, err1prslc2c := os.OpenFile("big_pie_is_in_here.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600) // append to file
-	check(err1prslc2c)                                                                                             // ... gets a file handle to dataLog-From_calculate-pi-and-friends.txt
-	defer fileHandleBig.Close()                                                                                    // It’s idiomatic to defer a Close immediately after opening a file.
-
-	// to ::: file		
-	_, err9bigpie := fmt.Fprint(fileHandleBig, pi)                               // dump this big-assed pie to a special log file
-	check(err9bigpie)
-	_, err9bigpie = fmt.Fprint(fileHandleBig, "was pi as a big.Float")  // add a suffix 
-	check(err9bigpie)
-
-	_, errGoesHere := fmt.Fprint(fileHandleBig, "")
-	check(errGoesHere)
-
-	fileHandleBig.Close()
-	
-	 */
 
 	return i, start, pi // assigning i to loops in caller
 }
 /*
-.
-.
 .
 .
 .
@@ -301,28 +279,7 @@ func finishChudIfsAndPrint(webPrint func(string), pi *big.Float, useAlternateFil
 	// ::: Check pi and convert to []string -- and, set lenOfPi
 	stringVerOfOurCorrectDigits, lenOfPi := checkPiTo59766(pi)
 
-	
-	/*
-	if lenOfPi < 600 {
-		
-		//	print to ::: screen
-		webPrint(fmt.Sprintf("lenOfPi < 600, so, Here are %d calculated digits that we have verified by reference (one at a time): ", lenOfPi))
-
-		// print via range to ::: screen	
-		for _, oneChar := range stringVerOfOurCorrectDigits { // pi is finally ::: printed here via ranging 
-			// to screen:
-			webPrint(fmt.Sprintf("%s", oneChar)) // ::: to screen
-		}
-
-		// print to ::: screen	
-		// webPrint(fmt.Sprintf("")) // ::: ---- this may be needed ------------------
-	}
-	
-	 */
-
-
-
-	if lenOfPi < 600 {
+		if lenOfPi < 600 {
 		webPrint(fmt.Sprintf("Here are %d verified digits (one at a time): ", lenOfPi))
 
 		for _, oneChar := range stringVerOfOurCorrectDigits {
@@ -335,13 +292,10 @@ func finishChudIfsAndPrint(webPrint func(string), pi *big.Float, useAlternateFil
 		webPrint("\n")
 	}
 	
-	
-	
+
 
 	if lenOfPi > 46000 { // if length of pi is > 48,000 digits we have something really big
 		// print to ::: screen
-		webPrint("We have been tasked with making a lot of pie and it was sooo big it needed its own file ...")
-		webPrint("... Go have a look in /.big_pie_is_in_here.txt to find all the digits of π you had requested. ")
 	} else {
 
 		// } else { continues below: (in other words, the following if-else conditions are only checked if length of pi was < 55,000 digits)

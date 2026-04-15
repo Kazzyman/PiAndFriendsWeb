@@ -1,3 +1,0 @@
-If you run into anything odd on Render (SSE timeouts are common on free tier — they sometimes cut connections after 30s of inactivity), 
-the fix is usually adding a periodic heartbeat comment to the stream. 
-Just holler if that comes up. Good luck with the deployment!
