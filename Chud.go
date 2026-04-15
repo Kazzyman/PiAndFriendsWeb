@@ -9,7 +9,7 @@ import (
 )
 
 // @formatter:off
-// ::: todo: finish printing the elapsed time 
+// ::: todo: finish printing the elapsed time
 // Chudnovsky method, based on https://arxiv.org/pdf/1809.00533.pdf
 /*
     The Chudnovsky algorithm is an incredibly-fast algorithm for calculating the digits of pi. It was developed by Gregory Chudnovsky and his
@@ -17,24 +17,23 @@ import (
 	been used to calculate pi to over 62 trillion digits.
 */
 //  Using this procedure, calculating 1,000,000 digits required 70,516 loops -- per the run on: Sun May 7 2023
-//  Total run-time was 8h4m39.7847064s on an old i7 
+//  Total run-time was 8h4m39.7847064s on an old i7
 //  AND, THAT CALCULATION WAS INDEPENDENTLY VERIFIED !!!!!!!!!!!
 
-// This will be a little-bit tricky. We want to use callbacks etc. so that we can use the smoother-scrolling webPrint(fmt.Sprintf("")) way of doing prints ... 
-// ... but this chudnovsky section is a cascade of functions: chudnovskyBig()-->calcPi()-->finishChudIfsAndPrint() 
+// This will be a little-bit tricky. We want to use callbacks etc. so that we can use the smoother-scrolling webPrint(fmt.Sprintf("")) way of doing prints ...
+// ... but this chudnovsky section is a cascade of functions: chudnovskyBig()-->calcPi()-->finishChudIfsAndPrint()
 func chudnovskyBig(webPrint func(string), digits int, done chan bool) { // ::: - -
 
-	// ::: webPrint will use updateOutput[1-4] depending on from which window called -- so we pass webPrint to calcPi(webPrint, float64(digits), start, loops) thusly 
+	// ::: webPrint will use updateOutput[1-4] depending on from which window called -- so we pass webPrint to calcPi(webPrint, float64(digits), start, loops) thusly
 	webPrint("... working ...")
 	var loops int
 	piAsBigFloat := new(big.Float).SetPrec(512).SetFloat64(0.0)
 	start := time.Now() // ::: start will be passed, and then passed back, in order to be compared with end time t
 
-				// ::: calcPi  <---- runs from here: v v v v v v v  
-				loops, start, piAsBigFloat = calcPi(webPrint, float64(digits), start, done) // ::: This is the call to calcPi
-				// loops, start, piAsBigFloat = calcPi(webPrint, float64(digits), start, done, piAsBigFloat) // had the piAsBigFloat
-				// ::: calcPi --- - - - --- ^ ^ ^ 
-
+	// ::: calcPi  <---- runs from here: v v v v v v v
+	loops, start, piAsBigFloat = calcPi(webPrint, float64(digits), start, done) // ::: This is the call to calcPi
+	// loops, start, piAsBigFloat = calcPi(webPrint, float64(digits), start, done, piAsBigFloat) // had the piAsBigFloat
+	// ::: calcPi --- - - - --- ^ ^ ^
 
 	if loops < 100 {
 		// .Text('f', 122) converts the big.Float to a string with 122 decimal places
@@ -43,9 +42,8 @@ func chudnovskyBig(webPrint func(string), digits int, done chan bool) { // ::: -
 		webPrint(fmt.Sprintf("Less than 100 loops, so here is a peek at the prospective value of Pi: %s", piString))
 		// prints: Less than 100 loops, so here is a peek at the prospective value of Pi: 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706920799063933996827509056
 	}
-	
 
-	// The following runs ::: after calcPi 
+	// The following runs ::: after calcPi
 	webPrint(fmt.Sprintf(" loops were: %d, and digits requested was: %d ", loops, digits))
 
 	webPrint(" 	The Chudnovsky algorithm is an incredibly-fast algorithm for calculating the digits of pi. It was developed by Gregory Chudnovsky and his ")
@@ -54,7 +52,8 @@ func chudnovskyBig(webPrint func(string), digits int, done chan bool) { // ::: -
 
 	// webPrint(fmt.Sprintf("Final Pi: %s", finalResult))
 	done <- true
-	}
+}
+
 /*
 .
 .
@@ -75,7 +74,7 @@ func calcPi(webPrint func(string), digits float64, start time.Time, done chan bo
 	n := int64(2 + int(float64(digits)/14.181647462))
 	// comments re: n := int64(2 + int(float64(digits)/12))  // I tried this, and may try something like it again someday?? like /14.0 ?
 
-	// set precision 
+	// set precision
 	// comments re: precision := uint(int(math.Ceil(math.Log2(10)*digits)) + int(math.Ceil(math.Log10(digits))) + 2) // the original
 	// comments re: precision := uint(digits) // not good, not large enough, so ...
 	digitsPlus := digits + digits*0.10 // because we needed a little more than the orriginal programmer had figured on :)
@@ -109,17 +108,15 @@ func calcPi(webPrint func(string), digits float64, start time.Time, done chan bo
 	queryIfTimeToDie := 1
 	i = 1 // a secondary dedicated loop counter
 
-
 	if n > 8998 {
 		webPrint(" Well, this is going to take a while, because you asked for too much pie (> 8990)")
 	}
 
-
 	for ; n > 0; n-- {
 		select {
 		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
-			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
-			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
+			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed.
+			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes.
 			webPrint("Goroutine chud-func-calcPi for-loop (1 of 1) is being terminated by select case finding the done channel to be already closed")
 			return i, start, pi // Exit the goroutine
 		default:
@@ -256,7 +253,7 @@ func calcPi(webPrint func(string), digits float64, start time.Time, done chan bo
 			if queryIfTimeToDie == 0 {
 				webPrint("if queryIfTimeToDie is 0, time to die")
 				webPrint(fmt.Sprintf("precisionision was: %d ", precision))
-				// break // ::: todo: not sure if I need this or if it is located correctly? 
+				// break // ::: todo: not sure if I need this or if it is located correctly?
 			}
 			// 1,000,000 digits requires 70516 loops, per the run on May 7 2023 at 10:30
 			//  was run on: Sun May  7 08:50:23 2023
@@ -265,35 +262,31 @@ func calcPi(webPrint func(string), digits float64, start time.Time, done chan bo
 		} // end of select
 	} // end of for loop way up thar :: it prompts periodically to continue or die
 
-
 	return i, start, pi // assigning i to loops in caller
 }
+
 /*
 .
 .
 .
 */
-// a helper func   
+// a helper func
 func finishChudIfsAndPrint(webPrint func(string), pi *big.Float, useAlternateFile string) { // ::: - -
 
 	// ::: Check pi and convert to []string -- and, set lenOfPi
 	stringVerOfOurCorrectDigits, lenOfPi := checkPiTo59766(pi)
 
-		if lenOfPi < 600 {
+	if lenOfPi < 600 {
 		webPrint(fmt.Sprintf("Here are %d verified digits (one at a time): ", lenOfPi))
 
+		var accumulated strings.Builder
 		for _, oneChar := range stringVerOfOurCorrectDigits {
-			webPrint(string(oneChar)) // Send one character
-
-			// Optional: Add a tiny delay to simulate the old desktop 'crawl'
-			// 10-20 milliseconds is usually perfect
+			accumulated.WriteString(oneChar)
+			webPrint("UPDATE:" + accumulated.String())
 			time.Sleep(20 * time.Millisecond)
 		}
-		webPrint("\n")
+		webPrint(accumulated.String())
 	}
-	
-
-
 	if lenOfPi > 46000 { // if length of pi is > 48,000 digits we have something really big
 		// print to ::: screen
 	} else {

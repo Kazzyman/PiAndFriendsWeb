@@ -9,8 +9,8 @@ import (
 // @formatter:off
 
 func JohnWallis(done chan bool, webPrint func(string)) float64 { // case 8: // -- AMFJohnWallisA
-	webPrint("I am here in JW")
-	// ::: it makes it to here before hanging
+webPrint("I am here in JW")
+// ::: it makes it to here before hanging
 
 	webPrint("The forgoing is the entire code for this method.")
 
@@ -34,10 +34,10 @@ func JohnWallis(done chan bool, webPrint func(string)) float64 { // case 8: // -
 	for iterInt64 < 1000000000 { // was 1000000000
 		select {
 		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
-			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed.
-			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes.
+			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
+			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
 			webPrint("Goroutine Wallis for-loop (1 of 2) is being terminated by select case finding the done channel to be already closed")
-			return π // Exit the goroutine
+			return π// Exit the goroutine
 		default:
 			iterInt64++
 			iterFloat64++
@@ -93,7 +93,7 @@ func JohnWallis(done chan bool, webPrint func(string)) float64 { // case 8: // -
 				t := time.Now()
 				elapsed := t.Sub(start)
 				RunTimeAsString := elapsed.String()
-
+	
 				piAsAString := strconv.FormatFloat(π, 'g', -1, 64)
 				checkPiUpTo255chars(piAsAString)
 				webPrint(fmt.Sprintf("40,000,000 iterations were completed in %s yielding %d confirmed digits of π", RunTimeAsString, copyOfLastPosition))
@@ -105,12 +105,12 @@ func JohnWallis(done chan bool, webPrint func(string)) float64 { // case 8: // -
 				t := time.Now()
 				elapsed := t.Sub(start)
 				RunTimeAsString := elapsed.String()
-
+	
 				piAsAString := strconv.FormatFloat(π, 'g', -1, 64)
 				checkPiUpTo255chars(piAsAString)
-
+	
 				webPrint(fmt.Sprintf("400,000,000 iterations were completed in %s yielding %d confirmed digits of π", RunTimeAsString, copyOfLastPosition))
-
+	
 				LinesPerIter = 36 // an estimate
 				webPrint(fmt.Sprintf("at aprox %0.1f lines of code per iteration ...", LinesPerIter))
 				LinesPerSecond = (LinesPerIter * iterFloat64) / elapsed.Seconds()
@@ -147,12 +147,12 @@ func JohnWallis(done chan bool, webPrint func(string)) float64 { // case 8: // -
 				t := time.Now()
 				elapsed := t.Sub(start)
 				RunTimeAsString := elapsed.String()
-
+	
 				piAsAString := strconv.FormatFloat(π, 'g', -1, 64)
 				checkPiUpTo255chars(piAsAString)
 				webPrint(fmt.Sprintf("One Billion iterations were completed in %s still only yielding π to %d confirmed digits", RunTimeAsString, copyOfLastPosition))
 				webPrint(" per --  an infinite series by John Wallis circa 1655") // ----------------------
-
+	
 				LinesPerIter = 36 // an estimate
 				webPrint(fmt.Sprintf("at aprox %0.1f lines of code per iteration ...", LinesPerIter))
 				LinesPerSecond = (LinesPerIter * iterFloat64) / elapsed.Seconds()
@@ -163,7 +163,7 @@ func JohnWallis(done chan bool, webPrint func(string)) float64 { // case 8: // -
 		} // select
 	} // end of first for loop
 
-	// :::webPrint(fmt.Sprintf("Enter any positive digit to continue with an additional 39 billion iterations, 0 to exit")
+// :::webPrint(fmt.Sprintf("Enter any positive digit to continue with an additional 39 billion iterations, 0 to exit")
 
 	webPrint("You elected to continue the infinite series by John Wallis")
 	webPrint("    an additionl 39 billion iterations will be executed    ... working ...")
@@ -178,133 +178,133 @@ func JohnWallis(done chan bool, webPrint func(string)) float64 { // case 8: // -
 	for iterInt64 < 40000000000 { // was 40000000000
 		select {
 		case <-done: // ::: here an attempt is made to read from the channel (a closed channel can be read from successfully; but what is read will be the null/zero value of the type of chan (0, false, "", 0.0, etc.)
-			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed.
-			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes.
+			// in the case of this particular channel (which is of type bool) we get the value false from having received from the channel when it is already closed. 
+			// ::: if the channel known by the moniker "done" is already closed, that/it is to be interpreted as the abort signal by all listening processes. 
 			webPrint("Goroutine Wallis for-loop (2 of 2) is being terminated by select case finding the done channel to be already closed")
-			return π // Exit the goroutine
+			return π// Exit the goroutine
 		default:
-			iterInt64++
-			iterFloat64++
-			numerators = numerators + 2
-			firstDenom = firstDenom + 2
-			secondDenom = secondDenom + 2
-			cumulativeProduct = cumulativeProduct * (numerators / firstDenom) * (numerators / secondDenom)
-			π = cumulativeProduct * 2
-
-			if iterInt64 == 2000000000 { // 2B completed
-				webPrint("  2B done, still working ... on another Billion iterations ... working ...")
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-				webPrint(fmt.Sprintf("%s", RunTimeAsString))
-			}
-			if iterInt64 == 3000000000 { // 3B completed
-				webPrint("  3B done, still working ... on another Billion iterations ... working ... ")
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-				webPrint(fmt.Sprintf("%s", RunTimeAsString))
-			}
-			if iterInt64 == 4000000000 { // 4B completed
-				webPrint("  4B done, still working ... on another Billion iterations ... working ...")
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-				webPrint(fmt.Sprintf("%s", RunTimeAsString))
-			}
-			if iterInt64 == 5000000000 { // 5B completed
-				webPrint("  5B done, still working ... on another Billion iterations ... working ...")
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-				webPrint(fmt.Sprintf("%s", RunTimeAsString))
-			}
-			if iterInt64 == 6000000000 { // 6B completed
-				webPrint("  6B done, still working ... on another Billion iterations ... working ...")
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-				webPrint(fmt.Sprintf("%s", RunTimeAsString))
-			}
-			if iterInt64 == 7000000000 { // 7B completed
-				webPrint("  7B done, still working ... on another Billion iterations ... working ...")
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-				webPrint(fmt.Sprintf("%s", RunTimeAsString))
-			}
-			if iterInt64 == 8000000000 { // 8B completed
-				webPrint("  8B done, still working ... on another Billion iterations ... working ...")
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-				webPrint(fmt.Sprintf("%s", RunTimeAsString))
-			}
-			if iterInt64 == 9000000000 { // 9B completed
-				webPrint("  9B done, still working ... on another five Billion iterations ... working ...")
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-				webPrint(fmt.Sprintf("%s", RunTimeAsString))
-			}
-			if iterInt64 == 14000000000 { // 14B completed
-				webPrint("  14B done, still working ... on another five Billion iterations ... working ...")
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-				webPrint(fmt.Sprintf("%s", RunTimeAsString))
-			}
-			if iterInt64 == 19000000000 { // 19B completed
-				webPrint("  19B done, still working ... on another five Billion iterations ... working ...")
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-				webPrint(fmt.Sprintf("%s", RunTimeAsString))
-			}
-			if iterInt64 == 24000000000 { // 24B completed
-				webPrint("  24B done, still working ... on another five Billion iterations ... working ...")
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-				webPrint(fmt.Sprintf("%s", RunTimeAsString))
-			}
-			if iterInt64 == 29000000000 { // 29B completed
-				webPrint("  29B done, still working ... on another five Billion iterations ... working ...")
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-				webPrint(fmt.Sprintf("%s", RunTimeAsString))
-			}
-			if iterInt64 == 34000000000 { // 34B completed
-				webPrint("  34B done, still working ... just another six Billion iterations to go! ... ")
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-				webPrint(fmt.Sprintf("%s", RunTimeAsString))
-			}
-			if iterInt64 == 40000000000 { // 40B completed
-				webPrint(fmt.Sprintf("%0.12f is our Pi calculated using an infinite series by John Wallis circa 1655", π))
-				webPrint("3.14159265358  is the value of π from the web")
-
-				t := time.Now()
-				elapsed := t.Sub(start)
-				RunTimeAsString := elapsed.String()
-
-				piAsAString := strconv.FormatFloat(π, 'g', -1, 64)
-				checkPiUpTo255chars(piAsAString)
-				webPrint(fmt.Sprintf("Forty Billion iterations were completed in %s yielding π to %d confirmed digits", RunTimeAsString, copyOfLastPosition))
-				webPrint(" per --  an infinite series by John Wallis circa 1655") // ----------------------
-				LinesPerIter = 36                                                 // an estimate
-				webPrint(fmt.Sprintf("at aprox %0.1f lines of code per iteration ...", LinesPerIter))
-				LinesPerSecond = (LinesPerIter * iterFloat64) / elapsed.Seconds()
-				formattedLinesPerSecond := formatInt64WithThousandSeparators(int64(LinesPerSecond)) // .Seconds() returns a float64
-				webPrint(fmt.Sprintf("Aprox %s lines of code were executed per second ", formattedLinesPerSecond))
-
-			}
+				iterInt64++
+				iterFloat64++
+				numerators = numerators + 2
+				firstDenom = firstDenom + 2
+				secondDenom = secondDenom + 2
+				cumulativeProduct = cumulativeProduct * (numerators / firstDenom) * (numerators / secondDenom)
+				π = cumulativeProduct * 2
+	
+				if iterInt64 == 2000000000 { // 2B completed
+					webPrint("  2B done, still working ... on another Billion iterations ... working ...")
+						t := time.Now()
+						elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+					webPrint(fmt.Sprintf("%s", RunTimeAsString))
+				}
+				if iterInt64 == 3000000000 { // 3B completed
+					webPrint("  3B done, still working ... on another Billion iterations ... working ... ")
+						t := time.Now()
+						elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+					webPrint(fmt.Sprintf("%s", RunTimeAsString))
+				}
+				if iterInt64 == 4000000000 { // 4B completed
+					webPrint("  4B done, still working ... on another Billion iterations ... working ...")
+						t := time.Now()
+						elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+					webPrint(fmt.Sprintf("%s", RunTimeAsString))
+				}
+				if iterInt64 == 5000000000 { // 5B completed
+					webPrint("  5B done, still working ... on another Billion iterations ... working ...")
+						t := time.Now()
+						elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+					webPrint(fmt.Sprintf("%s", RunTimeAsString))
+				}
+				if iterInt64 == 6000000000 { // 6B completed
+					webPrint("  6B done, still working ... on another Billion iterations ... working ...")
+						t := time.Now()
+						elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+					webPrint(fmt.Sprintf("%s", RunTimeAsString))
+				}
+				if iterInt64 == 7000000000 { // 7B completed
+					webPrint("  7B done, still working ... on another Billion iterations ... working ...")
+						t := time.Now()
+						elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+					webPrint(fmt.Sprintf("%s", RunTimeAsString))
+				}
+				if iterInt64 == 8000000000 { // 8B completed
+					webPrint("  8B done, still working ... on another Billion iterations ... working ...")
+						t := time.Now()
+						elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+					webPrint(fmt.Sprintf("%s", RunTimeAsString))
+				}
+				if iterInt64 == 9000000000 { // 9B completed
+					webPrint("  9B done, still working ... on another five Billion iterations ... working ...")
+						t := time.Now()
+						elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+					webPrint(fmt.Sprintf("%s", RunTimeAsString))
+				}
+				if iterInt64 == 14000000000 { // 14B completed
+					webPrint("  14B done, still working ... on another five Billion iterations ... working ...")
+						t := time.Now()
+						elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+					webPrint(fmt.Sprintf("%s", RunTimeAsString))
+				}
+				if iterInt64 == 19000000000 { // 19B completed
+					webPrint("  19B done, still working ... on another five Billion iterations ... working ...")
+						t := time.Now()
+						elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+					webPrint(fmt.Sprintf("%s", RunTimeAsString))
+				}
+				if iterInt64 == 24000000000 { // 24B completed
+					webPrint("  24B done, still working ... on another five Billion iterations ... working ...")
+						t := time.Now()
+						elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+					webPrint(fmt.Sprintf("%s", RunTimeAsString))
+				}
+				if iterInt64 == 29000000000 { // 29B completed
+					webPrint("  29B done, still working ... on another five Billion iterations ... working ...")
+						t := time.Now()
+						elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+					webPrint(fmt.Sprintf("%s", RunTimeAsString))
+				}
+				if iterInt64 == 34000000000 { // 34B completed
+					webPrint("  34B done, still working ... just another six Billion iterations to go! ... ")
+						t := time.Now()
+						elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+					webPrint(fmt.Sprintf("%s", RunTimeAsString))
+				}
+				if iterInt64 == 40000000000 { // 40B completed
+					webPrint(fmt.Sprintf("%0.12f is our Pi calculated using an infinite series by John Wallis circa 1655", π))
+					webPrint("3.14159265358  is the value of π from the web")
+	
+					t := time.Now()
+					elapsed := t.Sub(start)
+					RunTimeAsString := elapsed.String()
+	
+					piAsAString := strconv.FormatFloat(π, 'g', -1, 64)
+					checkPiUpTo255chars(piAsAString)
+					webPrint(fmt.Sprintf("Forty Billion iterations were completed in %s yielding π to %d confirmed digits", RunTimeAsString, copyOfLastPosition))
+					webPrint(" per --  an infinite series by John Wallis circa 1655") // ----------------------
+					LinesPerIter = 36                                                                // an estimate
+					webPrint(fmt.Sprintf("at aprox %0.1f lines of code per iteration ...", LinesPerIter))
+					LinesPerSecond = (LinesPerIter * iterFloat64) / elapsed.Seconds()
+					formattedLinesPerSecond := formatInt64WithThousandSeparators(int64(LinesPerSecond)) // .Seconds() returns a float64
+					webPrint(fmt.Sprintf("Aprox %s lines of code were executed per second ", formattedLinesPerSecond))
+	
+				}
 		} // end of select
 	} // end of for interInt64 < 40B
-	// written entirely by Richard Woolley
-	calculating = false
-	return π
+// written entirely by Richard Woolley
+calculating = false
+return π
 
 } // end of JohnWallis()

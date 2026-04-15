@@ -49,14 +49,14 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 				outputChan <- s
 			})
 		case "spigot":
-            digitsStr := r.URL.Query().Get("digits")
-            digits, err := strconv.Atoi(digitsStr)
-            if err != nil || digits <= 0 {
-                digits = 1000
-            }
-            TheSpigotWeb(digits, done, func(s string) {
-                outputChan <- s
-            })
+			digitsStr := r.URL.Query().Get("digits")
+			digits, err := strconv.Atoi(digitsStr)
+			if err != nil || digits <= 0 {
+				digits = 1000
+			}
+			TheSpigotWeb(digits, done, func(s string) {
+				outputChan <- s
+			})
 		case "monte":
 			// We grab the gridSize from the URL, or default to "100" if empty
 			gridSize := r.URL.Query().Get("gridSize")
@@ -93,7 +93,7 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 				outputChan <- s
 			}, digits, done)
 		case "customseries":
-			CustomSeries(func(s string) {
+			CustomSeries(done, func(s string) {
 				outputChan <- s
 			})
 		case "wallis":
@@ -112,54 +112,49 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 			}, done)
 
 		case "nilakantha":
-            itersStr := r.URL.Query().Get("iters")
-            iters, err := strconv.Atoi(itersStr)
-            if err != nil || iters <= 0 {
-                iters = 1000000 
-            }
-            precStr := r.URL.Query().Get("precision")
-            precision, err := strconv.Atoi(precStr)
-            if err != nil || precision <= 0 {
-                precision = 512 
-            }
-            NilakanthaBig(iters, precision, done, func(s string) {
-                outputChan <- s
-            })
-
-
-			
+			itersStr := r.URL.Query().Get("iters")
+			iters, err := strconv.Atoi(itersStr)
+			if err != nil || iters <= 0 {
+				iters = 1000000
+			}
+			precStr := r.URL.Query().Get("precision")
+			precision, err := strconv.Atoi(precStr)
+			if err != nil || precision <= 0 {
+				precision = 512
+			}
+			NilakanthaBig(iters, precision, done, func(s string) {
+				outputChan <- s
+			})
 
 		case "nilakantha_classic":
-            nifty_scoreBoardWeb(done, func(s string) {
-                outputChan <- s
-            })
+			nifty_scoreBoardWeb(done, func(s string) {
+				outputChan <- s
+			})
 
+		default:
+			outputChan <- "Unknown method requested."
+		}
 
+		func() {
+			defer func() { recover() }()
+			done <- true
+		}()
+	}()
 
-
-
-        default:
-            outputChan <- "Unknown method requested."
-        }
-
-        // Instead of a plain "done <- true", we use this safe select block:
-        select {
-        case done <- true:
-            // Successfully sent the signal.
-        default:
-            // The channel is full or already closed; do nothing and don't panic.
-        }
-    }()
-
-    // 4. Stream Loop (The "Broadcaster")
-    for {
-        select {
-        case msg := <-outputChan:
-            safeMsg := strings.ReplaceAll(msg, "\n", " ")
-            fmt.Fprintf(w, "data: %s\n\n", safeMsg)
-            w.(http.Flusher).Flush()
-        case <-done:
-            return
-        }
-    }
+	// 4. Stream Loop (The "Broadcaster")
+	ctx := r.Context()
+	for {
+		select {
+		case msg := <-outputChan:
+			safeMsg := strings.ReplaceAll(msg, "\n", " ")
+			fmt.Fprintf(w, "data: %s\n\n", safeMsg)
+			w.(http.Flusher).Flush()
+		case <-done:
+			return
+		case <-ctx.Done():
+			// Client disconnected (stop button, refresh, closed tab)
+			close(done)
+			return
+		}
+	}
 }
