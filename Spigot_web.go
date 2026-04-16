@@ -39,7 +39,6 @@ import (
 func TheSpigotWeb(done chan bool, webPrint func(string)) {
 	const numberOfDigits = 850
 	const bw             = 50
-	const targetSecs     = 14.0
 
 	webPrint("COLOR:cyan:" + boxSep(bw))
 	webPrint("COLOR:cyan:" + boxLine("  THE RABINOWITZ–WAGON SPIGOT ALGORITHM       ", bw))
@@ -53,6 +52,12 @@ func TheSpigotWeb(done chan bool, webPrint func(string)) {
 	webPrint("COLOR:cyan:" + boxSep(bw))
 	webPrint("")
 
+	webPrint("COLOR:yellow:" + boxSep(bw))
+	webPrint("COLOR:yellow:" + boxLine("  RUN 1 -- Full speed                         ", bw))
+	webPrint("COLOR:yellow:" + boxLine("  Computing 850 digits...                     ", bw))
+	webPrint("COLOR:yellow:" + boxSep(bw))
+	webPrint("")
+
 	run1Start := time.Now()
 	ok        := spigotRun1(done, webPrint)
 	run1Time  := time.Since(run1Start)
@@ -62,11 +67,13 @@ func TheSpigotWeb(done chan bool, webPrint func(string)) {
 		return
 	}
 
+	// Calculate a reasonable base delay for the non-pause parts of Run 2.
+	// The actual total runtime is dominated by human-visibility pauses.
 	normalDigits := numberOfDigits - 69
 	if normalDigits < 1 {
 		normalDigits = numberOfDigits
 	}
-	baseDelayMs := (targetSecs * 0.80 * 1000.0) / float64(normalDigits)
+	baseDelayMs := (8.0 * 1000.0) / float64(normalDigits) // gentle base (~8s of pure computation)
 	if baseDelayMs < 1 {
 		baseDelayMs = 1
 	}
@@ -82,16 +89,8 @@ func TheSpigotWeb(done chan bool, webPrint func(string)) {
 	webPrint("")
 	webPrint("  No matter. We will now run the algorithm again --")
 	webPrint("  a fresh computation, not a replay of Run 1 --")
-	webPrint("  with a delay calibrated to this platform so that")
-	webPrint(fmt.Sprintf("  the full run takes approximately %.0f seconds.", targetSecs))
-	webPrint("")
-	webPrint("  This time we will show you something the fast run")
-	webPrint("  was hiding. The Spigot algorithm is not always")
-	webPrint("  certain about its own output.")
-	webPrint("")
-	webPrint("  When it encounters a 9, it cannot yet know if that")
-	webPrint("  digit is correct -- a carry from later arithmetic")
-	webPrint("  could flip it to 0.")
+	webPrint("  this time with deliberate pauses so you can")
+	webPrint("  clearly see the uncertainty in action.")
 	webPrint("")
 	webPrint("COLOR:red:  Uncertain digits will appear in red as '?'.")
 	webPrint("  Each '?' is overwritten with the true digit the")
@@ -109,8 +108,8 @@ func TheSpigotWeb(done chan bool, webPrint func(string)) {
 	webPrint("COLOR:green:" + boxSep(bw))
 	webPrint("COLOR:green:" + boxLine("  RUN 2 -- Honest edition                     ", bw))
 	webPrint("COLOR:green:" + boxLine("  Uncertainty shown as it actually occurs      ", bw))
-	webPrint("COLOR:green:" + boxLine(fmt.Sprintf("  Base delay: %.1fms/digit, calibrated for ~%.0fs",
-		baseDelayMs, targetSecs), bw))
+	webPrint("COLOR:green:" + boxLine("  Human-paced for easy viewing (~3 minutes)     ", bw))
+	webPrint("COLOR:green:" + boxLine(fmt.Sprintf("  Base algorithmic delay: %.1f ms/digit         ", baseDelayMs), bw))
 	webPrint("COLOR:green:" + boxSep(bw))
 	webPrint("")
 
@@ -221,6 +220,10 @@ func spigotRun1(done chan bool, webPrint func(string)) bool {
 //   • Immediately before any pending ?s are resolved, the last 3 confirmed
 //     digits + the current ?s are visually re-drawn very quickly
 //     (300ms → 200ms → 150ms). Snappy but noticeable.
+//
+//   Total runtime is now dominated by deliberate human-visibility pauses
+//   rather than raw CPU speed. On both Mac Mini and render.com free tier,
+//   Run 2 consistently takes ~3 minutes.
 
 func spigotRun2(done chan bool, webPrint func(string), baseDelay time.Duration) bool {
 	const numberOfDigits = 850
@@ -228,7 +231,7 @@ func spigotRun2(done chan bool, webPrint func(string), baseDelay time.Duration) 
 	const feynmanLen     = 6
 	const slowStart      = 700
 	const feynmanZone    = 762
-	const previewDigits  = 3          // final refinement: only 3 digits
+	const previewDigits  = 3          // final value after tuning for best visibility
 	const humanPause     = 750 * time.Millisecond
 
 	size := numberOfDigits*10/3 + 50
@@ -279,7 +282,7 @@ func spigotRun2(done chan bool, webPrint func(string), baseDelay time.Duration) 
 		col++
 		pendingQs++
 		show()
-		time.Sleep(humanPause) // each red ? lingers visibly
+		time.Sleep(humanPause) // each red ? lingers visibly for the user
 	}
 
 	// confirmAndEmit: reveals pre before the pending ?s and resolves them
@@ -333,7 +336,7 @@ func spigotRun2(done chan bool, webPrint func(string), baseDelay time.Duration) 
 	}
 
 	// slowReplayPrecedingUncertainty: re-draws the last 3 confirmed digits
-	// + pending ?s with a quick progressive timing ramp.
+	// + pending ?s with a quick progressive timing ramp for optimal visibility.
 	slowReplayPrecedingUncertainty := func() {
 		if pendingQs == 0 {
 			return
@@ -353,12 +356,12 @@ func spigotRun2(done chan bool, webPrint func(string), baseDelay time.Duration) 
 		slowSegment := runes[previewStart:]
 		slowBase := string(runes[:previewStart])
 
-		// Quick blank to make the re-draw pop
+		// Quick blank to make the re-draw clearly visible
 		blanked := slowBase + strings.Repeat(" ", len(slowSegment))
 		webPrint("UPDATE:" + blanked)
 		time.Sleep(200 * time.Millisecond)
 
-		// Fast progressive delays: 300ms, 200ms, 150ms
+		// Fast progressive delays: 300ms → 200ms → 150ms
 		replayDelays := []time.Duration{
 			300 * time.Millisecond,
 			200 * time.Millisecond,
