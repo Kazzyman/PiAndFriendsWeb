@@ -149,22 +149,15 @@ func TheSpigotWeb(numberOfDigits int, done chan bool, webPrint func(string)) {
 func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool {
 	const lineWidth = 50
 
-	pi          := ""
-	line        := ""
-	boxes       := numberOfDigits * 10 / 3
-	remainders  := make([]int, boxes)
-	digitsHeld  := 0
-	decInserted := false
-	digitsSeen  := 0
+	size := numberOfDigits*10/3 + 50
+	a    := make([]int, size)
+	for i := range a { a[i] = 2 }
 
-	for i := 0; i < boxes; i++ {
-		select {
-		case <-done:
-			return false
-		default:
-			remainders[i] = 2
-		}
-	}
+	line        := ""
+	pre         := -1  // predigit, -1 = not yet set
+	nines       := 0
+	count       := 0
+	decInserted := false
 
 	addChar := func(ch string) {
 		line += ch
@@ -174,7 +167,16 @@ func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool 
 		}
 	}
 
-	for i := 0; i < numberOfDigits; i++ {
+	emit := func(d int) {
+		if !decInserted && count == 1 {
+			addChar(".")
+			decInserted = true
+		}
+		addChar(strconv.Itoa(d))
+		count++
+	}
+
+	for count < numberOfDigits {
 		select {
 		case <-done:
 			return false
@@ -183,59 +185,38 @@ func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool 
 
 		carriedOver := 0
 		sum         := 0
-
-		for j := boxes - 1; j >= 0; j-- {
+		for j := size - 1; j >= 0; j-- {
 			select {
 			case <-done:
 				return false
 			default:
 			}
-			remainders[j] *= 10
-			sum            = remainders[j] + carriedOver
-			quotient       := sum / (j*2 + 1)
-			remainders[j]  = sum % (j*2 + 1)
-			carriedOver     = quotient * j
+			a[j]        *= 10
+			sum          = a[j] + carriedOver
+			quotient     := sum / (j*2 + 1)
+			a[j]         = sum % (j*2 + 1)
+			carriedOver   = quotient * j
 		}
+		a[0] = sum % 10
+		q    := sum / 10
 
-		remainders[0] = sum % 10
-		q             := sum / 10
-
-		switch q {
-		case 9:
-			digitsHeld++
-		case 10:
-			q = 0
-			for k := 1; k <= digitsHeld; k++ {
-				select {
-				case <-done:
-					return false
-				default:
-				}
-				replaced, _ := strconv.Atoi(pi[i-k : i-k+1])
-				if replaced == 9 {
-					replaced = 0
-				} else {
-					replaced++
-				}
-				pi = delChar(pi, i-k)
-				pi = pi[:i-k] + strconv.Itoa(replaced) + pi[i-k:]
-			}
-			digitsHeld = 1
+		switch {
+		case q == 9:
+			nines++
+		case q == 10:
+			if pre >= 0 { emit(pre + 1) }
+			for i := 0; i < nines && count < numberOfDigits; i++ { emit(0) }
+			pre   = 0
+			nines = 0
 		default:
-			digitsHeld = 1
+			if pre >= 0 { emit(pre) }
+			for i := 0; i < nines && count < numberOfDigits; i++ { emit(9) }
+			pre   = q
+			nines = 0
 		}
+	}
 
-		pi += strconv.Itoa(q)
-		digitsSeen++
-		if !decInserted && digitsSeen == 2 {
-			addChar(".")
-			decInserted = true
-		}
-		addChar(strconv.Itoa(q))
-	}
-	if line != "" {
-		webPrint(line)
-	}
+	if line != "" { webPrint(line) }
 	return true
 }
 
@@ -257,7 +238,10 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), baseD
 	pi           := ""
 	line         := ""
 	col          := 0
-	boxes        := numberOfDigits * 10 / 3
+	// boxes        := numberOfDigits * 10 / 3
+	guardDigits := numberOfDigits/10 + 20
+	totalDigits := numberOfDigits + guardDigits
+	boxes       := totalDigits * 10 / 3 + 10
 	remainders   := make([]int, boxes)
 	digitsHeld   := 0
 	pendingQs    := 0
@@ -358,7 +342,8 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), baseD
 	// Seed the first blank row so the first UPDATE: has somewhere to land
 	webPrint("")
 
-	for i := 0; i < numberOfDigits; i++ {
+	// for i := 0; i < numberOfDigits; i++ {
+	for i := 0; i < totalDigits; i++ {
 		select {
 		case <-done:
 			return false
