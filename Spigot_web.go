@@ -501,6 +501,7 @@ func spigotRun2(done chan bool, webPrint func(string), baseDelay time.Duration) 
 	return true
 }
 
+/*
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 // delChar removes the character at index from string s.
@@ -509,3 +510,4 @@ func delChar(s string, index int) string {
 	tmp := []rune(s)
 	return string(append(tmp[0:index], tmp[index+1:]...))
 }
+	*/
