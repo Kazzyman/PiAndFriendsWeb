@@ -45,7 +45,7 @@ import (
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 func TheSpigotWeb(numberOfDigits int, done chan bool, webPrint func(string)) {
-	const bw         = 50
+	const bw = 50
 	const targetSecs = 14.0
 
 	webPrint("COLOR:cyan:" + boxSep(bw))
@@ -66,8 +66,8 @@ func TheSpigotWeb(numberOfDigits int, done chan bool, webPrint func(string)) {
 	webPrint("")
 
 	run1Start := time.Now()
-	ok        := spigotRun1(numberOfDigits, done, webPrint)
-	run1Time  := time.Since(run1Start)
+	ok := spigotRun1(numberOfDigits, done, webPrint)
+	run1Time := time.Since(run1Start)
 
 	if !ok {
 		webPrint("COLOR:red:  !! Aborted.")
@@ -150,13 +150,15 @@ func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool 
 	const lineWidth = 50
 
 	size := numberOfDigits*10/3 + 50
-	a    := make([]int, size)
-	for i := range a { a[i] = 2 }
+	a := make([]int, size)
+	for i := range a {
+		a[i] = 2
+	}
 
-	line        := ""
-	pre         := -1  // predigit, -1 = not yet set
-	nines       := 0
-	count       := 0
+	line := ""
+	pre := -1 // predigit, -1 = not yet set
+	nines := 0
+	count := 0
 	decInserted := false
 
 	addChar := func(ch string) {
@@ -184,39 +186,49 @@ func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool 
 		}
 
 		carriedOver := 0
-		sum         := 0
+		sum := 0
 		for j := size - 1; j >= 0; j-- {
 			select {
 			case <-done:
 				return false
 			default:
 			}
-			a[j]        *= 10
-			sum          = a[j] + carriedOver
-			quotient     := sum / (j*2 + 1)
-			a[j]         = sum % (j*2 + 1)
-			carriedOver   = quotient * j
+			a[j] *= 10
+			sum = a[j] + carriedOver
+			quotient := sum / (j*2 + 1)
+			a[j] = sum % (j*2 + 1)
+			carriedOver = quotient * j
 		}
 		a[0] = sum % 10
-		q    := sum / 10
+		q := sum / 10
 
 		switch {
 		case q == 9:
 			nines++
 		case q == 10:
-			if pre >= 0 { emit(pre + 1) }
-			for i := 0; i < nines && count < numberOfDigits; i++ { emit(0) }
-			pre   = 0
+			if pre >= 0 {
+				emit(pre + 1)
+			}
+			for i := 0; i < nines && count < numberOfDigits; i++ {
+				emit(0)
+			}
+			pre = 0
 			nines = 0
 		default:
-			if pre >= 0 { emit(pre) }
-			for i := 0; i < nines && count < numberOfDigits; i++ { emit(9) }
-			pre   = q
+			if pre >= 0 {
+				emit(pre)
+			}
+			for i := 0; i < nines && count < numberOfDigits; i++ {
+				emit(9)
+			}
+			pre = q
 			nines = 0
 		}
 	}
 
-	if line != "" { webPrint(line) }
+	if line != "" {
+		webPrint(line)
+	}
 	return true
 }
 
@@ -230,24 +242,24 @@ func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool 
 // and a plain append -- eliminating the doubling bug entirely.
 
 func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), baseDelay time.Duration) bool {
-	const lineWidth   = 50
-	const feynmanLen  = 6
-	const slowStart   = 700
+	const lineWidth = 50
+	const feynmanLen = 6
+	const slowStart = 700
 	const feynmanZone = 762
 
-	pi           := ""
-	line         := ""
-	col          := 0
+	pi := ""
+	line := ""
+	col := 0
 	// boxes        := numberOfDigits * 10 / 3
 	guardDigits := numberOfDigits/10 + 20
 	totalDigits := numberOfDigits + guardDigits
-	boxes       := totalDigits * 10 / 3 + 10
-	remainders   := make([]int, boxes)
-	digitsHeld   := 0
-	pendingQs    := 0
-	decPos       := 0
-	decInserted  := false
-	digitsSeen   := 0
+	boxes := totalDigits*10/3 + 10
+	remainders := make([]int, boxes)
+	digitsHeld := 0
+	pendingQs := 0
+	decPos := 0
+	decInserted := false
+	digitsSeen := 0
 	feynmanFired := false
 
 	for i := 0; i < boxes; i++ {
@@ -263,7 +275,7 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), baseD
 		if pos < slowStart || pos > feynmanZone+6 {
 			return baseDelay
 		}
-		t      := float64(pos-slowStart) / float64(feynmanZone-slowStart)
+		t := float64(pos-slowStart) / float64(feynmanZone-slowStart)
 		factor := 1.0 + 3.0*t
 		return time.Duration(float64(baseDelay) * factor)
 	}
@@ -284,8 +296,8 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), baseD
 	// overwrite that blank row with the first character of the new line.
 	newRow := func() {
 		webPrint("") // plain empty -- JS appends a blank row
-		line      = ""
-		col       = 0
+		line = ""
+		col = 0
 		pendingQs = 0
 	}
 
@@ -351,7 +363,7 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), baseD
 		}
 
 		carriedOver := 0
-		sum         := 0
+		sum := 0
 
 		for j := boxes - 1; j >= 0; j-- {
 			select {
@@ -360,14 +372,14 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), baseD
 			default:
 			}
 			remainders[j] *= 10
-			sum            = remainders[j] + carriedOver
-			quotient       := sum / (j*2 + 1)
-			remainders[j]  = sum % (j*2 + 1)
-			carriedOver     = quotient * j
+			sum = remainders[j] + carriedOver
+			quotient := sum / (j*2 + 1)
+			remainders[j] = sum % (j*2 + 1)
+			carriedOver = quotient * j
 		}
 
 		remainders[0] = sum % 10
-		q             := sum / 10
+		q := sum / 10
 
 		switch q {
 		case 9:
