@@ -65,6 +65,7 @@ func boxSep(w int) string {
 	return "+" + strings.Repeat("-", w) + "+"
 }
 
+// also used in Spigot, and presumably elsewhere too
 func boxLine(content string, w int) string {
     runeLen := len([]rune(content))
     if runeLen > w {
@@ -74,7 +75,6 @@ func boxLine(content string, w int) string {
     return "|" + content + strings.Repeat(" ", w-runeLen) + "|"
 }
 
-// also used in Spigot // TODO: make sure that this version that was altered for Spigot does not break this module. 
 // sleepForTerm paces the summation loop in three acts.
 // Total sleep across 5,000 terms: ~3.6 seconds.
 func sleepForTerm(k, n int) {

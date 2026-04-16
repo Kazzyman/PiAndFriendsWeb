@@ -40,15 +40,16 @@ func TheSpigotWeb(done chan bool, webPrint func(string)) {
 	const numberOfDigits = 850
 	const bw             = 50
 
+	// boxLine func will adjust the right-hand side of this drawing
 	webPrint("COLOR:cyan:" + boxSep(bw))
-	webPrint("COLOR:cyan:" + boxLine("  THE RABINOWITZ–WAGON SPIGOT ALGORITHM           ", bw))
-	webPrint("COLOR:cyan:" + boxLine("  Pi from integer arithmetic alone            ", bw))
-	webPrint("COLOR:cyan:" + boxLine("  1995 — produces digits sequentially, no floats    ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  THE RABINOWITZ–WAGON SPIGOT ALGORITHM ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  Pi from integer arithmetic alone ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  1995 — produces digits sequentially, no floats ", bw))
 	webPrint("COLOR:cyan:" + boxSep(bw))
-	webPrint("COLOR:cyan:" + boxLine("  Origin : Rabinowitz & Wagon (Am. Math. Monthly)", bw))
-	webPrint("COLOR:cyan:" + boxLine("          Rewritten by Richard Woolley            ", bw))
-	webPrint("COLOR:cyan:" + boxLine("  Method : Pure integer arithmetic only           ", bw))
-	webPrint("COLOR:cyan:" + boxLine("  Runs   : TWO genuine independent executions     ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  Origin : Rabinowitz & Wagon (Am. Math. Monthly) ", bw))
+	webPrint("COLOR:cyan:" + boxLine("          Rewritten by Richard Woolley ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  Method : Pure integer arithmetic only ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  Runs   : TWO genuine independent executions ", bw))
 	webPrint("COLOR:cyan:" + boxSep(bw))
 	webPrint("")
 
