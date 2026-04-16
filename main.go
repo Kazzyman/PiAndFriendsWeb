@@ -49,12 +49,7 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 				outputChan <- s
 			})
 		case "spigot":
-			digitsStr := r.URL.Query().Get("digits")
-			digits, err := strconv.Atoi(digitsStr)
-			if err != nil || digits <= 0 {
-				digits = 1000
-			}
-			TheSpigotWeb(digits, done, func(s string) {
+			TheSpigotWeb(done, func(s string) {
 				outputChan <- s
 			})
 		case "monte":

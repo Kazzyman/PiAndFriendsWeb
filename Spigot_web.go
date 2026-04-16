@@ -1,3 +1,5 @@
+// Grok does slow question marks in Spigot.txt
+
 package main
 
 // Spigot_web.go
@@ -13,61 +15,47 @@ package main
 // designed and implemented by Claude Sonnet (Anthropic), in collaboration
 // with Richard Woolley, April 2026.
 //
+// Human-visibility enhancement for red uncertainty markers (?):
+//   • 750 ms pause each time a red ? is printed (so humans actually see it)
+//   • Slow re-draw of the preceding ~10 confirmed digits + the pending ?s
+//     immediately before they resolve (visual "pay attention" replay)
+//   • All still 100% honest: the ?s are shown in real time as the algorithm
+//     produces them; the re-draw is pure display simulation after the fact.
+//
 // Design philosophy (Rick's explicit requirement):
 //   The algorithm is run TWICE. Both runs are genuine, independent
 //   executions of the full Spigot computation. Nothing is reused,
 //   replayed, or simulated between them.
-//
-//   Run 1 -- Full speed: digits sent as plain appends (no UPDATE:).
-//            No in-place updating needed since all digits are final.
-//
-//   Run 2 -- Honest edition: ALL digit line output goes via UPDATE:,
-//            which overwrites the current line in place. When a line
-//            is complete, a plain empty string "" is sent to open a
-//            new blank row, then the next digit starts a fresh UPDATE:
-//            sequence on that new row.
-//            This avoids the doubling bug where an UPDATE: and a plain
-//            append both show the same content.
-//
-// Message protocol:
-//   "UPDATE:text"        -- overwrite last line in place
-//   "UPDATE:HASRED:text" -- overwrite last line, color '?' red
-//   "COLOR:name:text"    -- append new colored line
-//   ""  (empty)          -- append blank row (opens new line for UPDATE:)
-//   plain text           -- append as permanent new line (Run 1 only)
 
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 )
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
-func TheSpigotWeb(numberOfDigits int, done chan bool, webPrint func(string)) {
-	const bw = 50
-	const targetSecs = 14.0
+func TheSpigotWeb(done chan bool, webPrint func(string)) {
+	const numberOfDigits = 850
+	const bw             = 50
+	const targetSecs     = 14.0
 
 	webPrint("COLOR:cyan:" + boxSep(bw))
-	webPrint("COLOR:cyan:" + boxLine("  THE SPIGOT ALGORITHM                        ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  THE RABINOWITZ–WAGON SPIGOT ALGORITHM       ", bw))
 	webPrint("COLOR:cyan:" + boxLine("  Pi from integer arithmetic alone            ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  1995 — produces digits sequentially, no floats", bw))
 	webPrint("COLOR:cyan:" + boxSep(bw))
-	webPrint("COLOR:cyan:" + boxLine("  Origin : sourced from GitHub, rewritten     ", bw))
-	webPrint("COLOR:cyan:" + boxLine("          by Richard Woolley                  ", bw))
-	webPrint("COLOR:cyan:" + boxLine("  Method : integer arithmetic only, no floats ", bw))
-	webPrint("COLOR:cyan:" + boxLine("  Runs   : TWO genuine independent executions ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  Origin : Rabinowitz & Wagon (Am. Math. Monthly)", bw))
+	webPrint("COLOR:cyan:" + boxLine("          Rewritten by Richard Woolley            ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  Method : Pure integer arithmetic only           ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  Runs   : TWO genuine independent executions     ", bw))
 	webPrint("COLOR:cyan:" + boxSep(bw))
-	webPrint("")
-
-	webPrint("COLOR:yellow:" + boxSep(bw))
-	webPrint("COLOR:yellow:" + boxLine("  RUN 1 -- Full speed                         ", bw))
-	webPrint("COLOR:yellow:" + boxLine(fmt.Sprintf("  Computing %d digits...", numberOfDigits), bw))
-	webPrint("COLOR:yellow:" + boxSep(bw))
 	webPrint("")
 
 	run1Start := time.Now()
-	ok := spigotRun1(numberOfDigits, done, webPrint)
-	run1Time := time.Since(run1Start)
+	ok        := spigotRun1(done, webPrint)
+	run1Time  := time.Since(run1Start)
 
 	if !ok {
 		webPrint("COLOR:red:  !! Aborted.")
@@ -87,8 +75,7 @@ func TheSpigotWeb(numberOfDigits int, done chan bool, webPrint func(string)) {
 	webPrint("")
 	webPrint("COLOR:yellow:" + boxSep(bw))
 	webPrint("COLOR:yellow:" + boxLine("  RUN 1 COMPLETE                              ", bw))
-	webPrint("COLOR:yellow:" + boxLine(fmt.Sprintf("  %d digits in %s",
-		numberOfDigits, run1Time.Round(time.Microsecond)), bw))
+	webPrint("COLOR:yellow:" + boxLine(fmt.Sprintf("  850 digits in %s", run1Time.Round(time.Microsecond)), bw))
 	webPrint("COLOR:yellow:" + boxSep(bw))
 	webPrint("")
 	webPrint("  Or was that too fast to follow?")
@@ -112,11 +99,9 @@ func TheSpigotWeb(numberOfDigits int, done chan bool, webPrint func(string)) {
 	webPrint("")
 	webPrint("  No simulation. Every '?' is real uncertainty,")
 	webPrint("  happening right now, on the server.")
-	if numberOfDigits >= 768 {
-		webPrint("")
-		webPrint("COLOR:yellow:  One more thing: keep your eyes open around")
-		webPrint("COLOR:yellow:  digit 762. Something rather famous lives there.")
-	}
+	webPrint("")
+	webPrint("COLOR:yellow:  One more thing: keep your eyes open around")
+	webPrint("COLOR:yellow:  digit 762. Something rather famous lives there.")
 	webPrint("")
 
 	time.Sleep(3 * time.Second)
@@ -129,7 +114,7 @@ func TheSpigotWeb(numberOfDigits int, done chan bool, webPrint func(string)) {
 	webPrint("COLOR:green:" + boxSep(bw))
 	webPrint("")
 
-	ok = spigotRun2(numberOfDigits, done, webPrint, baseDelay)
+	ok = spigotRun2(done, webPrint, baseDelay)
 	if !ok {
 		webPrint("COLOR:red:  !! Aborted.")
 		return
@@ -137,7 +122,7 @@ func TheSpigotWeb(numberOfDigits int, done chan bool, webPrint func(string)) {
 
 	webPrint("")
 	webPrint("COLOR:cyan:" + boxSep(bw))
-	webPrint("COLOR:cyan:" + boxLine(fmt.Sprintf("  Spigot complete: %d digits of Pi          ", numberOfDigits), bw))
+	webPrint("COLOR:cyan:" + boxLine("  Spigot complete: 850 digits of Pi            ", bw))
 	webPrint("COLOR:cyan:" + boxLine("  Integer arithmetic only. No floating point   ", bw))
 	webPrint("COLOR:cyan:" + boxLine("  numbers were used in this production.        ", bw))
 	webPrint("COLOR:cyan:" + boxSep(bw))
@@ -146,19 +131,18 @@ func TheSpigotWeb(numberOfDigits int, done chan bool, webPrint func(string)) {
 // ── Run 1: full speed ─────────────────────────────────────────────────────────
 // Plain appends only. No UPDATE: needed since every digit is immediately final.
 
-func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool {
-	const lineWidth = 50
+func spigotRun1(done chan bool, webPrint func(string)) bool {
+	const numberOfDigits = 850
+	const lineWidth      = 50
 
 	size := numberOfDigits*10/3 + 50
-	a := make([]int, size)
-	for i := range a {
-		a[i] = 2
-	}
+	a    := make([]int, size)
+	for i := range a { a[i] = 2 }
 
-	line := ""
-	pre := -1 // predigit, -1 = not yet set
-	nines := 0
-	count := 0
+	line        := ""
+	pre         := -1
+	nines       := 0
+	count       := 0
 	decInserted := false
 
 	addChar := func(ch string) {
@@ -170,6 +154,7 @@ func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool 
 	}
 
 	emit := func(d int) {
+		if count >= numberOfDigits { return }
 		if !decInserted && count == 1 {
 			addChar(".")
 			decInserted = true
@@ -186,49 +171,39 @@ func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool 
 		}
 
 		carriedOver := 0
-		sum := 0
+		sum         := 0
 		for j := size - 1; j >= 0; j-- {
 			select {
 			case <-done:
 				return false
 			default:
 			}
-			a[j] *= 10
-			sum = a[j] + carriedOver
-			quotient := sum / (j*2 + 1)
-			a[j] = sum % (j*2 + 1)
+			a[j]      *= 10
+			sum        = a[j] + carriedOver
+			quotient   := sum / (j*2 + 1)
+			a[j]       = sum % (j*2 + 1)
 			carriedOver = quotient * j
 		}
 		a[0] = sum % 10
-		q := sum / 10
+		q    := sum / 10
 
 		switch {
 		case q == 9:
 			nines++
 		case q == 10:
-			if pre >= 0 {
-				emit(pre + 1)
-			}
-			for i := 0; i < nines && count < numberOfDigits; i++ {
-				emit(0)
-			}
-			pre = 0
+			if pre >= 0 { emit(pre + 1) }
+			for i := 0; i < nines && count < numberOfDigits; i++ { emit(0) }
+			pre   = 0
 			nines = 0
 		default:
-			if pre >= 0 {
-				emit(pre)
-			}
-			for i := 0; i < nines && count < numberOfDigits; i++ {
-				emit(9)
-			}
-			pre = q
+			if pre >= 0 { emit(pre) }
+			for i := 0; i < nines && count < numberOfDigits; i++ { emit(9) }
+			pre   = q
 			nines = 0
 		}
 	}
 
-	if line != "" {
-		webPrint(line)
-	}
+	if line != "" { webPrint(line) }
 	return true
 }
 
@@ -240,48 +215,45 @@ func spigotRun1(numberOfDigits int, done chan bool, webPrint func(string)) bool 
 //
 // This means the JS never sees the same line content as both an UPDATE:
 // and a plain append -- eliminating the doubling bug entirely.
+//
+// Human-noticeability improvements (April 2026):
+//   • Every red ? is held on-screen for a full 750 ms when first printed.
+//   • Immediately before any pending ?s are resolved, the last 3 confirmed
+//     digits + the current ?s are visually re-drawn very quickly
+//     (300ms → 200ms → 150ms). Snappy but noticeable.
 
-func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), baseDelay time.Duration) bool {
-	const lineWidth = 50
-	const feynmanLen = 6
-	const slowStart = 700
-	const feynmanZone = 762
+func spigotRun2(done chan bool, webPrint func(string), baseDelay time.Duration) bool {
+	const numberOfDigits = 850
+	const lineWidth      = 50
+	const feynmanLen     = 6
+	const slowStart      = 700
+	const feynmanZone    = 762
+	const previewDigits  = 3          // final refinement: only 3 digits
+	const humanPause     = 750 * time.Millisecond
 
-	pi := ""
-	line := ""
-	col := 0
-	// boxes        := numberOfDigits * 10 / 3
-	guardDigits := numberOfDigits/10 + 20
-	totalDigits := numberOfDigits + guardDigits
-	boxes := totalDigits*10/3 + 10
-	remainders := make([]int, boxes)
-	digitsHeld := 0
-	pendingQs := 0
-	decPos := 0
-	decInserted := false
-	digitsSeen := 0
+	size := numberOfDigits*10/3 + 50
+	a    := make([]int, size)
+	for i := range a { a[i] = 2 }
+
+	line         := ""
+	col          := 0
+	pendingQs    := 0
+	pre          := -1
+	nines        := 0
+	count        := 0
+	decPos       := 0
+	decInserted  := false
 	feynmanFired := false
-
-	for i := 0; i < boxes; i++ {
-		select {
-		case <-done:
-			return false
-		default:
-			remainders[i] = 2
-		}
-	}
 
 	delayFor := func(pos int) time.Duration {
 		if pos < slowStart || pos > feynmanZone+6 {
 			return baseDelay
 		}
-		t := float64(pos-slowStart) / float64(feynmanZone-slowStart)
+		t      := float64(pos-slowStart) / float64(feynmanZone-slowStart)
 		factor := 1.0 + 3.0*t
 		return time.Duration(float64(baseDelay) * factor)
 	}
 
-	// show sends the current line as UPDATE:, overwriting in place.
-	// All digit output goes through here -- never via plain webPrint.
 	show := func() {
 		if pendingQs > 0 {
 			webPrint("UPDATE:HASRED:" + line)
@@ -290,72 +262,134 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), baseD
 		}
 	}
 
-	// newRow commits the current line visually (it is already showing
-	// correctly via the last show() call) and opens a fresh blank row
-	// by sending an empty plain string. The next show() call will then
-	// overwrite that blank row with the first character of the new line.
 	newRow := func() {
-		webPrint("") // plain empty -- JS appends a blank row
-		line = ""
-		col = 0
+		webPrint("")
+		line      = ""
+		col       = 0
 		pendingQs = 0
 	}
 
-	// flushRow commits the current line and opens a fresh row.
-	// The line is already showing correctly via the last show() call,
-	// so we just send "" to anchor it and open the next row --
-	// exactly like newRow(). Sending webPrint(line) here would cause
-	// the JS to emit the line a second time (doubling bug).
-	flushRow := func() {
-		if line != "" {
+	showQ := func() {
+		if !decInserted && count == 1 {
+			line += "."
+			col++
+			decInserted = true
+		}
+		line += "?"
+		col++
+		pendingQs++
+		show()
+		time.Sleep(humanPause) // each red ? lingers visibly
+	}
+
+	// confirmAndEmit: reveals pre before the pending ?s and resolves them
+	// one by one to resolvedNineChar.
+	confirmAndEmit := func(preDigit int, resolvedNineChar rune) {
+		runes  := []rune(line)
+		qStart := len(runes) - pendingQs
+
+		prefix := make([]rune, qStart, qStart+2)
+		copy(prefix, runes[:qStart])
+
+		if preDigit >= 0 && count < numberOfDigits {
+			if !decInserted && count == 1 {
+				prefix      = append(prefix, '.')
+				decInserted = true
+			}
+			prefix = append(prefix, rune('0'+preDigit))
+			decPos++
+			count++
+		}
+		prefixLen := len(prefix)
+
+		pending := make([]rune, pendingQs)
+		copy(pending, runes[qStart:])
+		line = string(prefix) + string(pending)
+		col  = len([]rune(line))
+		show()
+		time.Sleep(baseDelay / 2)
+
+		for i := 0; pendingQs > 0 && count < numberOfDigits; i++ {
+			select {
+			case <-done:
+				pendingQs = 0
+				return
+			default:
+			}
+			allRunes         := []rune(line)
+			allRunes[prefixLen+i] = resolvedNineChar
+			line      = string(allRunes)
+			pendingQs--
+			decPos++
+			count++
+			show()
+			time.Sleep(baseDelay / 2)
+		}
+		pendingQs = 0
+		col = len([]rune(line))
+		if col >= lineWidth {
 			newRow()
 		}
 	}
 
-	appendChar := func(ch string) {
-		line += ch
-		col++
-		if col >= lineWidth {
-			show()   // show complete line via UPDATE:
-			newRow() // open next row
-		} else {
-			show()
+	// slowReplayPrecedingUncertainty: re-draws the last 3 confirmed digits
+	// + pending ?s with a quick progressive timing ramp.
+	slowReplayPrecedingUncertainty := func() {
+		if pendingQs == 0 {
+			return
 		}
-	}
-
-	showQ := func() {
-		line += "?"
-		col++
-		pendingQs++
-		// Do NOT enforce lineWidth break here. pendingQs must stay intact so
-		// the ?s can be resolved in-place (to 9 or 0) before the line commits.
-		// The line may briefly exceed lineWidth while ?s are unresolved;
-		// it commits after resolution in the default or carry case.
-		show()
-	}
-
-	resolveQs := func(count int, digit rune) {
-		start := len([]rune(line)) - pendingQs
 		runes := []rune(line)
-		for k := 0; k < count && start+k < len(runes); k++ {
-			select {
-			case <-done:
-				return
-			default:
-			}
-			runes[start+k] = digit
-			line = string(runes)
-			pendingQs--
-			show()
-			time.Sleep(baseDelay / 2)
+		qStart := len(runes) - pendingQs
+		if qStart < 0 {
+			return
 		}
+
+		previewLen := previewDigits
+		if previewLen > qStart {
+			previewLen = qStart
+		}
+		previewStart := qStart - previewLen
+
+		slowSegment := runes[previewStart:]
+		slowBase := string(runes[:previewStart])
+
+		// Quick blank to make the re-draw pop
+		blanked := slowBase + strings.Repeat(" ", len(slowSegment))
+		webPrint("UPDATE:" + blanked)
+		time.Sleep(200 * time.Millisecond)
+
+		// Fast progressive delays: 300ms, 200ms, 150ms
+		replayDelays := []time.Duration{
+			300 * time.Millisecond,
+			200 * time.Millisecond,
+			150 * time.Millisecond,
+		}
+
+		for i := 0; i < len(slowSegment); i++ {
+			partialSegment := slowSegment[:i+1]
+			partial := slowBase + string(partialSegment)
+
+			if strings.Contains(string(partialSegment), "?") {
+				webPrint("UPDATE:HASRED:" + partial)
+			} else {
+				webPrint("UPDATE:" + partial)
+			}
+
+			delay := replayDelays[len(replayDelays)-1]
+			if i < len(replayDelays) {
+				delay = replayDelays[i]
+			}
+			time.Sleep(delay)
+		}
+
+		// Restore exact original line state
+		line = slowBase + string(slowSegment)
+		col = len([]rune(line))
 	}
 
-	// Seed the first blank row so the first UPDATE: has somewhere to land
-	webPrint("")
+	webPrint("") // seed blank row for first UPDATE:
 
-	// for i := 0; i < numberOfDigits; i++ {
-	for i := 0; i < totalDigits; i++ {
+	for count < numberOfDigits {
 		select {
 		case <-done:
 			return false
@@ -363,150 +397,104 @@ func spigotRun2(numberOfDigits int, done chan bool, webPrint func(string), baseD
 		}
 
 		carriedOver := 0
-		sum := 0
-
-		for j := boxes - 1; j >= 0; j-- {
+		sum         := 0
+		for j := size - 1; j >= 0; j-- {
 			select {
 			case <-done:
 				return false
 			default:
 			}
-			remainders[j] *= 10
-			sum = remainders[j] + carriedOver
-			quotient := sum / (j*2 + 1)
-			remainders[j] = sum % (j*2 + 1)
+			a[j]      *= 10
+			sum        = a[j] + carriedOver
+			quotient   := sum / (j*2 + 1)
+			a[j]       = sum % (j*2 + 1)
 			carriedOver = quotient * j
 		}
+		a[0] = sum % 10
+		q    := sum / 10
 
-		remainders[0] = sum % 10
-		q := sum / 10
-
-		switch q {
-		case 9:
-			digitsHeld++
-			decPos++
-			digitsSeen++
-			if !decInserted && digitsSeen == 2 {
-				appendChar(".")
-				decInserted = true
-			}
-			pi += "9"
+		switch {
+		case q == 9:
+			nines++
 			showQ()
-			time.Sleep(delayFor(decPos))
+			time.Sleep(delayFor(decPos + nines))
 
-		case 10:
-			q = 0
-			for k := 1; k <= digitsHeld; k++ {
-				select {
-				case <-done:
-					return false
-				default:
-				}
-				replaced, _ := strconv.Atoi(pi[i-k : i-k+1])
-				if replaced == 9 {
-					replaced = 0
-				} else {
-					replaced++
-				}
-				pi = delChar(pi, i-k)
-				pi = pi[:i-k] + strconv.Itoa(replaced) + pi[i-k:]
+		case q == 10:
+			savedNines := nines
+			carryPre   := -1
+			if pre >= 0 { carryPre = pre + 1 }
+
+			if nines > 0 {
+				slowReplayPrecedingUncertainty()
 			}
 
-			// Handle carry display.
-			// Save pendingQs BEFORE flushRow/newRow resets it to zero.
-			// IMPORTANT: in the spigot display model (same as Run 1), held 9s
-			// ARE displayed as 9s even when a carry fires. The carry does not
-			// flip the held 9 to 0 -- it makes the CURRENT iteration's digit 0.
-			// Run 1 shows e.g. "...9 0..." where 9 is the held digit and 0 is
-			// the carry digit. We do the same: resolve ? to 9, then emit 0.
-			savedPendingQs := pendingQs
+			confirmAndEmit(carryPre, '0')
+			nines = 0
 
-			if savedPendingQs > 0 {
-				// Resolve the ?s to 9s in-place on the current line,
-				// then commit the line before the carry message.
-				resolveQs(savedPendingQs, '9')
-				if col >= lineWidth {
-					show()
-					newRow()
-				}
-				flushRow()
-				if savedPendingQs == 1 {
+			if savedNines > 0 {
+				if line != "" { newRow() }
+				if savedNines == 1 {
 					webPrint("COLOR:red:" + fmt.Sprintf(
-						"  [CARRY at position %d] That 9 is confirmed.", decPos))
-					webPrint("COLOR:red:  A carry fires -- the next digit in the sequence is 0.")
+						"  [CARRY at ~position %d] That 9 becomes 0.", decPos))
 				} else {
 					webPrint("COLOR:red:" + fmt.Sprintf(
-						"  [CARRY at position %d] Those %d 9s are confirmed.", decPos, savedPendingQs))
-					webPrint("COLOR:red:  A carry fires -- the next digit in the sequence is 0.")
+						"  [CARRY at ~position %d] Those %d 9s become 0s.", decPos, savedNines))
 				}
+				webPrint("COLOR:red:  The digit before them was also incremented.")
 				time.Sleep(baseDelay * 3)
-				webPrint("") // blank line between message and following digits
+				webPrint("")
 				webPrint("")
 			}
-
-			decPos++
-			digitsSeen++
-			if !decInserted && digitsSeen == 2 {
-				appendChar(".")
-				decInserted = true
-			}
-			pi += strconv.Itoa(q)
-			digitsHeld = 1
-			appendChar(strconv.Itoa(q))
-			time.Sleep(delayFor(decPos))
+			pre = 0
 
 		default:
-			if digitsHeld > 0 && pendingQs > 0 {
-				resolveQs(pendingQs, '9')
+			savedNines := nines
 
-				if !feynmanFired && digitsHeld >= feynmanLen {
-					feynmanFired = true
-					flushRow()
-					webPrint("")
-					webPrint("COLOR:yellow:  +--------------------------------------------------+")
-					webPrint("COLOR:yellow:  | !! THE FEYNMAN POINT !!                          |")
-					webPrint("COLOR:yellow:  | (or perhaps the Hofstadter Point?)               |")
-					webPrint("COLOR:yellow:  | Six consecutive 9s at decimal position 762       |")
-					webPrint("COLOR:yellow:  | ...134  999999  837...                           |")
-					webPrint("COLOR:yellow:  |                                                  |")
-					webPrint("COLOR:yellow:  | You just watched the algorithm hold all six as   |")
-					webPrint("COLOR:yellow:  | '??????' -- because a carry could have flipped   |")
-					webPrint("COLOR:yellow:  | every one of them to zero.                       |")
-					webPrint("COLOR:yellow:  | They resolved to 999999. Truth confirmed        |")
-					webPrint("COLOR:yellow:  | in real time ... in real-slow time.              |")
-					webPrint("COLOR:yellow:  |                                                  |")
-					webPrint("COLOR:yellow:  | Feynman: 'nine nine nine nine nine nine...        |")
-					webPrint("COLOR:yellow:  |          ...and so on!'                          |")
-					webPrint("COLOR:yellow:  +--------------------------------------------------+")
-					webPrint("")
-					time.Sleep(4 * time.Second)
-					webPrint("") // seed blank row for digits to continue
-				}
+			if nines > 0 {
+				slowReplayPrecedingUncertainty()
 			}
 
-			digitsHeld = 1
-			// If resolving the ?s filled the line to lineWidth, commit it now
-			// before appending the current digit on a fresh row.
-			if col >= lineWidth {
-				show()
-				newRow()
+			confirmAndEmit(pre, '9')
+			nines = 0
+
+			if !feynmanFired && savedNines >= feynmanLen {
+				feynmanFired = true
+				if line != "" { newRow() }
+				webPrint("")
+				webPrint("COLOR:yellow:  +--------------------------------------------------+")
+				webPrint("COLOR:yellow:  | !! THE FEYNMAN POINT !!                          |")
+				webPrint("COLOR:yellow:  | (or perhaps the Hofstadter Point?)               |")
+				webPrint("COLOR:yellow:  | Six consecutive 9s at decimal position 762       |")
+				webPrint("COLOR:yellow:  | ...134  999999  837...                           |")
+				webPrint("COLOR:yellow:  |                                                  |")
+				webPrint("COLOR:yellow:  | You just watched the algorithm hold all six as   |")
+				webPrint("COLOR:yellow:  | '??????' -- because a carry could have flipped   |")
+				webPrint("COLOR:yellow:  | every one of them to zero.                       |")
+				webPrint("COLOR:yellow:  | They resolved to 999999. Truth confirmed         |")
+				webPrint("COLOR:yellow:  | in real time ... in real-slow time.              |")
+				webPrint("COLOR:yellow:  |                                                  |")
+				webPrint("COLOR:yellow:  | Feynman: \"nine nine nine nine nine nine...       |")
+				webPrint("COLOR:yellow:  |          ...and so on!\"                         |")
+				webPrint("COLOR:yellow:  +--------------------------------------------------+")
+				webPrint("")
+				time.Sleep(4 * time.Second)
+				webPrint("") // seed blank row for digits to continue
 			}
-			decPos++
-			digitsSeen++
-			if !decInserted && digitsSeen == 2 {
-				appendChar(".")
-				decInserted = true
-			}
-			pi += strconv.Itoa(q)
-			appendChar(strconv.Itoa(q))
-			time.Sleep(delayFor(decPos))
+
+			pre = q
+			time.Sleep(delayFor(decPos + 1))
 		}
 	}
 
-	// Commit final partial line -- cursor already shows it correctly
-	if line != "" {
-		newRow()
+	// Emit final held pre if needed
+	if pre >= 0 && count < numberOfDigits {
+		if nines > 0 {
+			slowReplayPrecedingUncertainty()
+		}
+		confirmAndEmit(pre, '9')
 	}
+
+	if line != "" { newRow() }
 	return true
 }
 
