@@ -41,9 +41,9 @@ func TheSpigotWeb(done chan bool, webPrint func(string)) {
 	const bw             = 50
 
 	webPrint("COLOR:cyan:" + boxSep(bw))
-	webPrint("COLOR:cyan:" + boxLine("  THE RABINOWITZ–WAGON SPIGOT ALGORITHM         ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  THE RABINOWITZ–WAGON SPIGOT ALGORITHM           ", bw))
 	webPrint("COLOR:cyan:" + boxLine("  Pi from integer arithmetic alone            ", bw))
-	webPrint("COLOR:cyan:" + boxLine("  1995 — produces digits sequentially, no floats  ", bw))
+	webPrint("COLOR:cyan:" + boxLine("  1995 — produces digits sequentially, no floats    ", bw))
 	webPrint("COLOR:cyan:" + boxSep(bw))
 	webPrint("COLOR:cyan:" + boxLine("  Origin : Rabinowitz & Wagon (Am. Math. Monthly)", bw))
 	webPrint("COLOR:cyan:" + boxLine("          Rewritten by Richard Woolley            ", bw))

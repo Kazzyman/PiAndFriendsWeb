@@ -65,15 +65,16 @@ func boxSep(w int) string {
 	return "+" + strings.Repeat("-", w) + "+"
 }
 
-// boxLine returns a content line padded to exactly w inner chars: |content...|
 func boxLine(content string, w int) string {
-	// Truncate if somehow over (shouldn't happen with correct literals)
-	if len(content) > w {
-		content = content[:w]
-	}
-	return "|" + content + strings.Repeat(" ", w-len(content)) + "|"
+    runeLen := len([]rune(content))
+    if runeLen > w {
+        content = string([]rune(content)[:w])
+        runeLen = w
+    }
+    return "|" + content + strings.Repeat(" ", w-runeLen) + "|"
 }
 
+// also used in Spigot // TODO: make sure that this version that was altered for Spigot does not break this module. 
 // sleepForTerm paces the summation loop in three acts.
 // Total sleep across 5,000 terms: ~3.6 seconds.
 func sleepForTerm(k, n int) {
