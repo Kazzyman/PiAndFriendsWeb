@@ -94,15 +94,20 @@
     </button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
-    <button class="btn" style="background: #e0af68; color: #1a1b26;" onclick="start('spigot')">
-        The Spigot Algorithm -- Honest Edition<br>
-        integer arithmetic only -- no floating point anywhere<br>
-        Run 1: digits flash at full CPU speed, timed to the microsecond<br>
-        Run 2: fresh computation -- uncertain digits shown in red as '?'<br>
-        resolved on screen the moment the algorithm actually knows<br>
-        set to 800+ digits for a surprise Easter egg at position 762
+<button class="btn" style="background: #e0af68; color: #1a1b26;" onclick="start('spigot')">
+        The Spigot Algorithm -- Uber Honest Edition<br>
+        employs integer arithmetic only<br><br>
+        <span style="display: block; text-align: left;">Run 1: digits flash at full CPU speed</span>
+        <span style="display: block; text-align: left;">Run 2: a fresh computation -- uncertain digits shown in red as '?'s
+        which are then resolved on-screen the moment the algorithm knows the actual answer</span>
+        <br>Watch to the end of Run 2 for a surprise 'Easter Egg' at position 762
     </button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
+
+    <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="showSpigotExplainer()">
+    How the Spigot Algorithm bakes Pi, Click here for an easy-to-follow explanation of how the Spigot works<br>
+</button>
+<hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
     <div class="input-group">
         <label>BBP Digits:</label>
@@ -227,6 +232,83 @@ Select a method from the panel on the left to begin...<span id="cursor"></span><
     }
 
 // no arch
+// no Spigot
+
+function showSpigotExplainer() {
+    stopCurrent(false);
+    const out = document.getElementById('output');
+    out.innerHTML = `<span id="cursor"></span>`;
+    const lines = [
+        "An easy-to-follow explanation of how the sausage is made",
+        "",
+        "Imagine you're building the number π (3.14159...) using only whole numbers —",
+        "no decimal points or fractions allowed at any step. That's what this",
+        "'Spigot' method does. It's like squeezing digits of π out of a machine",
+        "that only knows how to add, subtract, and multiply whole numbers.",
+        "",
+        "── Why 'integers only' matters ──",
+        "",
+        "Most computer programs calculate π using floating-point numbers (numbers",
+        "with decimal points). But floating-point math can introduce tiny rounding",
+        "errors that get worse the more digits you ask for.",
+        "",
+        "The Spigot algorithm never uses decimals. It works entirely with integers.",
+        "This guarantees that every digit it produces is exact — no rounding errors",
+        "ever creep in.",
+        "",
+        "── The 'uncertain' digits (the red ?s) ──",
+        "",
+        "While it's calculating, the algorithm sometimes doesn't know for sure",
+        "whether a digit should be a 9 or a 0.",
+        "",
+        "When it thinks a digit might be 9, it shows a red '?' instead. This means:",
+        "'I think this is probably a 9… but later arithmetic might create a carry",
+        "that forces me to change it to 0.'",
+        "",
+        "It's not guessing or faking it — the uncertainty is real. The program is",
+        "genuinely waiting to see what happens further down the line.",
+        "",
+        "── What is a 'carry'? ──",
+        "",
+        "Think of it like adding numbers by hand:",
+        "",
+        "     999",
+        "   +   1",
+        "   -----",
+        "    1000",
+        "",
+        "The 9s all flip to 0s, and the digit to the left increases by 1.",
+        "",
+        "When a carry happens in the Spigot algorithm:",
+        "  • All the uncertain 9s (the red ?s) turn into 0s.",
+        "  • The digit just before them gets increased by 1.",
+        "",
+        "You get to watch this happen live in Run 2. The red ?s sit there for a",
+        "moment, then — when the carry is confirmed — they flip to the correct digit.",
+        "",
+        "── Why show the uncertainty? ──",
+        "",
+        "Most pi calculators hide all this and just show the final digits instantly.",
+        "",
+        "This demo deliberately slows down and shows you the honest internal struggle",
+        "of the algorithm. The red ?s and the slow re-draws let you see the math",
+        "thinking out loud in real time.",
+        "",
+        "It's like watching a tightrope walker who sometimes wobbles — you get to",
+        "see the wobble before they safely reach the other side.",
+    ];
+    let i = 0;
+    function printNext() {
+        if (i >= lines.length) return;
+        const cursor = document.getElementById('cursor');
+        const escaped = lines[i].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        cursor.outerHTML = '\n' + escaped + '<span id="cursor"></span>';
+        out.scrollTop = out.scrollHeight;
+        i++;
+        setTimeout(printNext, 18);
+    }
+    printNext();
+}
 
 // BBP
     function runBBP() {
