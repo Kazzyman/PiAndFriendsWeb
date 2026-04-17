@@ -45,7 +45,7 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 		switch method { // ::: These cases are where the association is made to webPrint.
 		case "archimedes":
 			// Here, we create an 'anonymous' function on the fly. Anything ArchimedesBig sends to 's' gets thrown onto the channel.
-			ArchimedesBig(func(s string) {
+			ArchimedesBig(done, func(s string) {
 				outputChan <- s
 			})
 		case "spigot":

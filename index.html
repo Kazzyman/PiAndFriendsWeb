@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Pi & Friends Web Suite</title>
+    <title>Pi &amp; Friends Web Suite — Richard Woolley</title>
+    <meta name="description" content="An interactive suite of π calculation algorithms by Richard Woolley, implemented in Go. Features Archimedes, Spigot, BBP, Chudnovsky, Gauss-Legendre, Nilakantha, Monte Carlo, Wallis, and more.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>π</text></svg>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             display: flex;
@@ -106,19 +109,18 @@
         }
     </style>
 </head>
-/*
-. 
-. 
-*/
+<!-- 
+.
+-->
 <body>
 <div id="sidebar">
     <!-- Roots Demo Head line -->
         <h3>Brute-force Roots Demo</h3>
     <!-- Roots input fields -->
     <input type="number" id="radical" value="2">
-    <!-- caption --> <body><span style="display: block; text-align: center;">Enter radical (2|3) above</span></body>
+    <!-- caption --> <span style="display: block; text-align: center;">Enter radical (2|3) above</span>
     <input type="number" id="workpiece" value="49">
-    <!-- caption --><body><span style="display: block; text-align: center;">Enter any valid radicand above</span></body>
+    <!-- caption --><span style="display: block; text-align: center;">Enter any valid radicand above</span>
 
     <!-- Roots button -->
     <button class="btn" style="background: #e0af68; color: #1a1b26; margin-top: 10px;" onclick="startRoots()">
@@ -220,7 +222,9 @@
         Gauss-Legendre<br>
         C F Gauss, refined by Adrien-Marie Legendre<br>
         π ≈ (aₙ + bₙ)² / (4 tₙ)<br>
-        only manages to do 10 digits of Pi in well-over five minutes, an infinite series circa 1655<br>
+        quadratic convergence -- correct digits double each iteration<br>
+        up to 4,930 verified digits with 12 iterations<br>
+        an infinite series circa 1655<br>
         --- served here by Rick Woolley ---
     </button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
@@ -252,7 +256,7 @@
     <div style="color: #9ece6a; font-weight: bold; margin-bottom: 6px;">Nilakantha Classic values</div>
     <label>Phase 1 terms, float64 (max 10000):</label>
     <input type="number" id="nilaN1" value="5000" min="100" max="10000"><br>
-    <label>Phase 2 terms, big.Float (max 50000):</label>
+    <label>Phase 2 terms, big.Float (max 2000000):</label>
  <input type="number" id="nilaN2" value="1000000" min="100" max="2000000">
 </div>
 <button class="btn" style="background: #9ece6a; color: #1a1b26;" onclick="runNilaClassic()">
@@ -274,8 +278,11 @@
     </button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
+    <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="copyOutput()">
+    Copy Output to Clipboard
+</button>
 
-    <button class="btn" style="background: #f7768e; color: white;" onclick="stopCurrent()">
+    <button class="btn" style="background: #f7768e; color: white;" onclick="stopCurrent(false)">
         Stop/Clear Calculation
     </button>
  </div>
@@ -288,12 +295,12 @@ Source code available at https://github.com/Kazzyman/PiAndFriendsWeb.<br>
 Select a method from the panel on the left to begin...<span id="cursor"></span></div>
     <div id="status" style="padding: 10px 25px 10px 25px; color: #7aa2f7; font-size: 12px; font-style: italic; flex-shrink: 0;"></div>
 </div>
-/*
-. 
-. 
-*/
-// ::: BEGIN script functions
+<!--
+.
+-->
+
 <script>
+    // ::: BEGIN script functions
     let currentEventSource = null;
 
 // Roots
@@ -308,6 +315,10 @@ Select a method from the panel on the left to begin...<span id="cursor"></span><
         alert("The number you want the root of must be 2 or greater.");
         return;
     }
+    if (Number(rad) !== 2 && Number(rad) !== 3) {
+    alert("The radical must be either 2 or 3.");
+    return;
+}
     start(`roots&radical=${rad}&workpiece=${work}`);
 }
 
@@ -489,6 +500,15 @@ function runNilaClassic() {
 }
 
 // no wallis
+
+function copyOutput() {
+    const text = document.getElementById('output').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        document.getElementById('status').innerText = "Output copied to clipboard.";
+    }).catch(() => {
+        document.getElementById('status').innerText = "Copy failed -- try selecting and copying manually.";
+    });
+}
 
 // STOP current 
  function stopCurrent(clearScreen = true) {
