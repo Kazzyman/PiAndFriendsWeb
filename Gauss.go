@@ -70,7 +70,7 @@ func Gauss_Legendre(iters int, webPrint func(string)) {
 	// ── Validate user input ───────────────────────────────────────────────
 	if iters > gaussMaxIters {
 		webPrint(fmt.Sprintf("  The maximum number of iterations is %d.", gaussMaxIters))
-		webPrint(fmt.Sprintf("  Beyond that, runtime becomes impractical for a web demo."))
+		webPrint("  Beyond that, runtime becomes impractical for a web demo.")
 		webPrint(fmt.Sprintf("  Please choose a number from 1 to %d.", gaussMaxIters))
 		return
 	}

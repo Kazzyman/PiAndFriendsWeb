@@ -5,20 +5,23 @@ package main
 // Nilakantha Somayaji's alternating series for π (c. 1530):
 //   π = 3 + 4/(2·3·4) − 4/(4·5·6) + 4/(6·7·8) − ···
 //
-// Runs in two phases to demonstrate the hard ceiling of float64
-// and what happens when you push past it with big.Float:
+// Convergence rate: error after N terms ≈ 1/(2N³)
+// This means each factor of 10 in terms buys 3 more correct digits:
+//   10,000 terms  →  ~12 digits
+//   100,000 terms →  ~15 digits   (float64 wall)
+//   1,000,000     →  ~18 digits   (wall broken!)
+//   5,000,000     →  ~21 digits
 //
 // Phase 1 — float64, concurrent goroutines
-//   Up to 10,000 terms, each computed in its own goroutine.
-//   A live scoreboard updates in place as terms arrive.
-//   Milestone messages celebrate each new correct decimal digit.
-//   Converges to ~15 digits, then float64 has nothing left to give.
+//   Live scoreboard, milestone fanfare as each digit locks in.
+//   Caps at ~15 digits no matter how long you run it.
+//   That cap IS the demonstration.
 //
-// Phase 2 — big.Float, 512-bit precision, sequential
-//   Picks up the series where Phase 1 left off (same k counter).
-//   Runs up to 50,000 additional terms.
-//   The moment new digits appear beyond the float64 wall, they are
-//   announced with fanfare. Uses piForGauss as reference (3000+ digits).
+// Phase 2 — big.Float, 512-bit, sequential
+//   Runs from term 1 through n1+n2, accumulating in big.Float.
+//   At ~100,000-200,000 terms the wall breaks and new digits appear.
+//   Progress updates every 10,000 terms with live digit count.
+//   The wall-break moment is announced with fanfare.
 //
 // Adapted by Richard Woolley with a lot of help from Claude.
 
@@ -30,14 +33,13 @@ import (
 	"time"
 )
 
-// ── Phase 1 reference (float64 era) ──────────────────────────────────────────
+// ── Phase 1 reference (float64 era, 20 digits is plenty) ─────────────────────
 
 const piReference = "3.14159265358979323846"
 
 // countCorrectDigits counts correct decimal digits in a float64 estimate.
-// Used only during Phase 1 -- float64 can give at most 15.
 func countCorrectDigits(f float64) int {
-	s := fmt.Sprintf("%.20f", f)
+	s       := fmt.Sprintf("%.20f", f)
 	correct := 0
 	for i := 0; i < len(piReference) && i < len(s); i++ {
 		if s[i] == piReference[i] {
@@ -53,9 +55,9 @@ func countCorrectDigits(f float64) int {
 }
 
 // countCorrectDigitsBig counts correct decimal digits in a big.Float estimate.
-// Used during Phase 2 -- references piForGauss for up to 3000+ digit comparison.
-func countCorrectDigitsBig(pi *big.Float, prec uint) int {
-	s   := pi.Text('f', int(prec/3)+10)
+// Uses piForGauss which has 3000+ verified digits.
+func countCorrectDigitsBig(pi *big.Float) int {
+	s   := pi.Text('f', 35)
 	ref := piForGauss
 	correct := 0
 	for i := 0; i < len(ref) && i < len(s); i++ {
@@ -105,32 +107,34 @@ func dramaticMilestone(digits int) string {
 	if msg, ok := msgs[digits]; ok {
 		return msg
 	}
-	return fmt.Sprintf("*** %d correct decimal digits!", digits)
+	return fmt.Sprintf("*** %d correct decimal digits -- beyond float64 resolution!", digits)
 }
 
 // ── Phase 2 milestone messages ────────────────────────────────────────────────
 
 func bigMilestone(digits int) string {
-	switch {
-	case digits == 16:
+	switch digits {
+	case 16:
 		return "COLOR:cyan:  !! 16 digits -- we just broke through the float64 wall !!"
-	case digits == 17:
-		return "COLOR:cyan:  !! 17 digits -- territory float64 cannot even see"
-	case digits == 18:
+	case 17:
+		return "COLOR:cyan:  !! 17 digits -- territory float64 cannot even represent"
+	case 18:
 		return "COLOR:cyan:  !! 18 digits -- Nilakantha in the 18th decimal place"
-	case digits == 20:
-		return "COLOR:cyan:  !! 20 digits -- two full decades of π"
-	case digits%5 == 0:
-		return fmt.Sprintf("COLOR:cyan:  !! %d digits -- big.Float climbing steadily", digits)
+	case 19:
+		return "COLOR:cyan:  !! 19 digits -- Kerala school, c.1530, still climbing"
+	case 20:
+		return "COLOR:cyan:  !! 20 digits -- two full decades of π confirmed"
 	default:
+		if digits > 20 {
+			return fmt.Sprintf("COLOR:cyan:  !! %d digits -- big.Float soaring", digits)
+		}
 		return fmt.Sprintf("COLOR:green:  >> %d correct digits", digits)
 	}
 }
 
 // ── Pacing for Phase 1 ────────────────────────────────────────────────────────
 
-// sleepForTerm paces the Phase 1 summation loop in three acts:
-// burst at the start, gentle ramp through the middle, plateau at the end.
+// sleepForTerm paces the Phase 1 loop: burst → ramp → plateau.
 func sleepForTerm(k, n int) {
 	pct := float64(k) / float64(n)
 	switch {
@@ -148,15 +152,17 @@ func sleepForTerm(k, n int) {
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
-// nifty_scoreBoardWeb runs both phases sequentially.
-// n1 = Phase 1 terms (float64, concurrent goroutines)
-// n2 = Phase 2 terms (big.Float, sequential, picks up where Phase 1 left off)
+// nifty_scoreBoardWeb runs both phases.
+//   n1 = Phase 1 terms (float64, concurrent goroutines, default 5000)
+//   n2 = Phase 2 terms (big.Float, sequential, default 1,000,000)
 func nifty_scoreBoardWeb(n1, n2 int, done chan bool, webPrint func(string)) float64 {
 
 	const bw   = 50
-	const prec = uint(512) // big.Float precision in bits for Phase 2
+	const prec = uint(512)
 
-	// ── Phase 1 header ────────────────────────────────────────────────────
+	totalTerms := n1 + n2
+
+	// ── Header ────────────────────────────────────────────────────────────
 	webPrint(boxSep(bw))
 	webPrint(boxLine("  NILAKANTHA TWO-PHASE Pi ENGINE              ", bw))
 	webPrint(boxLine("  π = 3 + 4/(2·3·4) − 4/(4·5·6) + ···       ", bw))
@@ -166,8 +172,10 @@ func nifty_scoreBoardWeb(n1, n2 int, done chan bool, webPrint func(string)) floa
 	webPrint(boxLine("  Ceiling : ~15 correct decimal digits        ", bw))
 	webPrint(boxSep(bw))
 	webPrint(boxLine("  PHASE 2: big.Float · 512-bit · sequential   ", bw))
-	webPrint(boxLine(fmt.Sprintf("  Terms   : %d  (continues from Phase 1)", n2), bw))
+	webPrint(boxLine(fmt.Sprintf("  Terms   : %d additional", n2), bw))
+	webPrint(boxLine(fmt.Sprintf("  Total   : %d terms", totalTerms), bw))
 	webPrint(boxLine("  Ceiling : genuine arbitrary precision        ", bw))
+	webPrint(boxLine("  Error   : ~1/(2N³): 10x terms = 3 new digits", bw))
 	webPrint(boxSep(bw))
 	webPrint("")
 
@@ -188,9 +196,8 @@ func nifty_scoreBoardWeb(n1, n2 int, done chan bool, webPrint func(string)) floa
 
 	webPrint(fmt.Sprintf("  Launching %d goroutines...", n1))
 
-	go pi_nf_web(n1, done, webPrint, displayChan, resultChan, computationDone, &termsCount)
+	go pi_nf_web(n1, done, displayChan, resultChan, computationDone, &termsCount)
 
-	// Live scoreboard ticker goroutine
 	go func() {
 		for range ticker.C {
 			select {
@@ -227,18 +234,16 @@ func nifty_scoreBoardWeb(n1, n2 int, done chan bool, webPrint func(string)) floa
 		}
 	}()
 
-	// Wait for Phase 1 to complete
-	var phase1Result float64
+	// Wait for Phase 1 to finish
 	for {
 		select {
 		case <-computationDone:
 			ticker.Stop()
-			phase1Result = <-resultChan
+			phase1Final   := <-resultChan
 			phase1Elapsed := time.Since(phase1Start)
-			finalDigits   := countCorrectDigits(phase1Result)
+			finalDigits   := countCorrectDigits(phase1Final)
 
-			// Build the match string for the summary
-			fs    := fmt.Sprintf("%.15f", phase1Result)
+			fs    := fmt.Sprintf("%.15f", phase1Final)
 			match := ""
 			for i := 0; i < len(piReference) && i < len(fs); i++ {
 				if fs[i] == piReference[i] {
@@ -255,18 +260,20 @@ func nifty_scoreBoardWeb(n1, n2 int, done chan bool, webPrint func(string)) floa
 			webPrint(boxLine(fmt.Sprintf("  Time  : %s", phase1Elapsed.Round(time.Millisecond)), bw))
 			webPrint(boxLine(fmt.Sprintf("  Terms : %d", termsCount), bw))
 			webPrint(boxLine(fmt.Sprintf("  Digits: %d correct decimal places", finalDigits), bw))
-			webPrint(boxLine(fmt.Sprintf("  Final : %.15f", phase1Result), bw))
+			webPrint(boxLine(fmt.Sprintf("  Final : %.15f", phase1Final), bw))
 			webPrint(boxLine(fmt.Sprintf("  Match : %s", match), bw))
 			webPrint(boxSep(bw))
 			webPrint("")
 			webPrint("  float64 has given everything it has.")
-			webPrint("  Fifteen digits is the wall.")
-			webPrint("  Phase 2 will now pick up the series at the same k")
-			webPrint("  and continue with big.Float at 512-bit precision.")
-			webPrint("  Watch for new digits to appear beyond position 15.")
+			webPrint("  The wall is real. ~15 digits is the ceiling.")
 			webPrint("")
-
+			webPrint(fmt.Sprintf("  Phase 2 will now run %d terms in big.Float", n2))
+			webPrint("  at 512-bit precision (~154 decimal digits of headroom).")
+			webPrint("  The wall should break somewhere around term 150,000.")
+			webPrint("  This will take a few minutes. Watch the digit count.")
+			webPrint("")
 			goto phase2
+
 		case <-done:
 			ticker.Stop()
 			webPrint("  !! Aborted by user during Phase 1.")
@@ -277,68 +284,65 @@ func nifty_scoreBoardWeb(n1, n2 int, done chan bool, webPrint func(string)) floa
 phase2:
 	// ── Phase 2 ───────────────────────────────────────────────────────────
 	//
-	// We restart the Nilakantha series from scratch using big.Float at
-	// 512-bit precision. The series is not resumable from a float64 value
-	// (the accumulated rounding error would pollute the big.Float result)
-	// so we recompute all n1 terms quickly in big.Float, then continue
-	// with n2 more terms, displaying progress as we go.
-	//
-	// The "wall break" moment -- when digits beyond 15 first appear --
-	// is announced with special fanfare.
+	// We recompute from term 1 entirely in big.Float. We cannot resume
+	// from the float64 accumulator -- its accumulated rounding error sits
+	// right at the digits we are trying to reveal. Starting fresh keeps
+	// the big.Float accumulator clean for all n1+n2 terms.
 
 	webPrint("COLOR:yellow:  ── PHASE 2 BEGIN ──────────────────────────────────────")
 	webPrint("")
-	webPrint(fmt.Sprintf("  Recomputing %d Phase-1 terms in big.Float (fast)...", n1))
-	webPrint("")
+	webPrint(fmt.Sprintf("  Recomputing Phase-1 terms (%d) silently in big.Float...", n1))
 
-	phase2Start  := time.Now()
+	phase2Start   := time.Now()
 	bestBigDigits := 0
-	wallBroken   := false
+	wallBroken    := false
 
-	// big.Float constants
-	three := new(big.Float).SetPrec(prec).SetFloat64(3.0)
-	four2 := new(big.Float).SetPrec(prec).SetFloat64(4.0)
-	one   := new(big.Float).SetPrec(prec).SetFloat64(1.0)
+	two  := new(big.Float).SetPrec(prec).SetFloat64(2.0)
+	four := new(big.Float).SetPrec(prec).SetFloat64(4.0)
 
-	// Accumulator starts at 3
-	piB := new(big.Float).SetPrec(prec).Set(three)
+	piB      := new(big.Float).SetPrec(prec).SetFloat64(3.0)
+	digitOne := new(big.Float).SetPrec(prec).SetFloat64(2.0)
+	digitTwo := new(big.Float).SetPrec(prec).SetFloat64(3.0)
+	digitThr := new(big.Float).SetPrec(prec).SetFloat64(4.0)
 
-	// nilakanthaTerm returns the kth term as a big.Float
-	// term_k = ±4 / (2k · (2k+1) · (2k+2))
-	nilakanthaBigTerm := func(k int) *big.Float {
-		j   := float64(2 * k)
-		den := j * (j + 1) * (j + 2)
-		t   := new(big.Float).SetPrec(prec).Quo(four2, new(big.Float).SetPrec(prec).SetFloat64(den))
-		if k%2 == 0 {
-			t.Neg(t)
-		}
-		return t
-	}
+	// Apply k=1 term: 3 + 4/(2*3*4)
+	firstTerm := new(big.Float).SetPrec(prec).Quo(four,
+		new(big.Float).SetPrec(prec).Mul(digitOne,
+			new(big.Float).SetPrec(prec).Mul(digitTwo, digitThr)))
+	piB.Add(piB, firstTerm)
 
-	// Fast recompute of Phase 1 terms (no display, no sleep)
-	for k := 1; k <= n1; k++ {
+	// Silent recompute: k=2 through n1
+	for k := 2; k <= n1; k++ {
 		select {
 		case <-done:
-			webPrint("  !! Aborted by user during Phase 2 recompute.")
+			webPrint("  !! Aborted during Phase 2 silent recompute.")
 			return 0.0
 		default:
 		}
-		piB.Add(piB, nilakanthaBigTerm(k))
+		digitOne.Add(digitOne, two)
+		digitTwo.Add(digitTwo, two)
+		digitThr.Add(digitThr, two)
+
+		term := new(big.Float).SetPrec(prec).Quo(four,
+			new(big.Float).SetPrec(prec).Mul(digitOne,
+				new(big.Float).SetPrec(prec).Mul(digitTwo, digitThr)))
+
+		if k%2 == 0 {
+			piB.Sub(piB, term)
+		} else {
+			piB.Add(piB, term)
+		}
 	}
 
-	webPrint(fmt.Sprintf("  Phase-1 recompute complete. Continuing with %d new terms...", n2))
+	silentElapsed := time.Since(phase2Start)
+	webPrint(fmt.Sprintf("  Silent recompute done in %s.", silentElapsed.Round(time.Millisecond)))
+	webPrint(fmt.Sprintf("  Now running %d new terms with live display...", n2))
 	webPrint("")
+	webPrint("") // seed blank row for first UPDATE:
 
-	// Seed blank row for first UPDATE:
-	webPrint("")
+	const updateEvery = 10000
 
-	// Now run Phase 2 terms, displaying live progress
-	updateInterval := n2 / 200 // update display ~200 times
-	if updateInterval < 1 {
-		updateInterval = 1
-	}
-
-	for k := n1 + 1; k <= n1+n2; k++ {
+	for k := n1 + 1; k <= totalTerms; k++ {
 		select {
 		case <-done:
 			webPrint("  !! Aborted by user during Phase 2.")
@@ -346,31 +350,44 @@ phase2:
 		default:
 		}
 
-		piB.Add(piB, nilakanthaBigTerm(k))
+		digitOne.Add(digitOne, two)
+		digitTwo.Add(digitTwo, two)
+		digitThr.Add(digitThr, two)
 
-		// Check for new correct digits periodically
-		if k%updateInterval == 0 || k == n1+n2 {
-			digits  := countCorrectDigitsBig(piB, prec)
+		term := new(big.Float).SetPrec(prec).Quo(four,
+			new(big.Float).SetPrec(prec).Mul(digitOne,
+				new(big.Float).SetPrec(prec).Mul(digitTwo, digitThr)))
+
+		if k%2 == 0 {
+			piB.Sub(piB, term)
+		} else {
+			piB.Add(piB, term)
+		}
+
+		if k%updateEvery == 0 || k == totalTerms {
+			digits  := countCorrectDigitsBig(piB)
 			pct     := float64(k-n1) / float64(n2)
 			bar     := progressBar(pct, 20)
 			elapsed := time.Since(phase2Start)
-			piStr   := piB.Text('f', 20)
+			piStr   := piB.Text('f', 22)
 
-			// Announce wall break the first time we exceed 15 digits
 			if !wallBroken && digits > 15 {
 				wallBroken = true
 				webPrint("")
 				webPrint("COLOR:cyan:  ╔══════════════════════════════════════════════════╗")
 				webPrint("COLOR:cyan:  ║  !! THE FLOAT64 WALL HAS BEEN BROKEN !!         ║")
 				webPrint("COLOR:cyan:  ║  big.Float is now showing digits that           ║")
-				webPrint("COLOR:cyan:  ║  float64 arithmetic cannot even represent.      ║")
+				webPrint("COLOR:cyan:  ║  float64 cannot even represent.                 ║")
+				webPrint("COLOR:cyan:  ║  Nilakantha Somayaji, c.1530, still delivering. ║")
 				webPrint("COLOR:cyan:  ╚══════════════════════════════════════════════════╝")
 				webPrint("")
+				webPrint("") // re-seed for UPDATE:
 			}
 
 			if digits > bestBigDigits {
 				bestBigDigits = digits
 				webPrint(bigMilestone(digits))
+				webPrint("") // re-seed after milestone
 			}
 
 			webPrint(fmt.Sprintf(
@@ -380,47 +397,44 @@ phase2:
 		}
 	}
 
-	// ── Phase 2 final summary ─────────────────────────────────────────────
+	// ── Final summary ─────────────────────────────────────────────────────
 
 	phase2Elapsed := time.Since(phase2Start)
-	finalDigits   := countCorrectDigitsBig(piB, prec)
+	finalDigits   := countCorrectDigitsBig(piB)
 
-	// Display string: verified digits only
-	verifiedLen := finalDigits + 2 // +2 for "3."
-	piStr       := piB.Text('f', finalDigits+5)
-	if len(piStr) > verifiedLen {
-		piStr = piStr[:verifiedLen]
+	displayStr := piB.Text('f', finalDigits+2)
+	if len(displayStr) > finalDigits+2 {
+		displayStr = displayStr[:finalDigits+2]
 	}
 
 	webPrint("")
 	webPrint(boxSep(bw))
 	webPrint(boxLine("  PHASE 2 COMPLETE                            ", bw))
-	webPrint(boxLine(fmt.Sprintf("  Time  : %s", phase2Elapsed.Round(time.Millisecond)), bw))
-	webPrint(boxLine(fmt.Sprintf("  Terms : %d  (Phase 1) + %d  (Phase 2)", n1, n2), bw))
-	webPrint(boxLine(fmt.Sprintf("  Digits: %d correct decimal places", finalDigits), bw))
+	webPrint(boxLine(fmt.Sprintf("  Time     : %s", phase2Elapsed.Round(time.Millisecond)), bw))
+	webPrint(boxLine(fmt.Sprintf("  New terms: %d", n2), bw))
+	webPrint(boxLine(fmt.Sprintf("  Total    : %d terms", totalTerms), bw))
+	webPrint(boxLine(fmt.Sprintf("  Digits   : %d correct decimal places", finalDigits), bw))
 	webPrint(boxSep(bw))
 	webPrint("")
-	webPrint(fmt.Sprintf("  π = %s", piStr))
+	webPrint(fmt.Sprintf("  π = %s", displayStr))
 	webPrint("")
 	webPrint(boxSep(bw))
 	webPrint(boxLine("  TWO-PHASE NILAKANTHA COMPLETE                ", bw))
-	webPrint(boxLine(fmt.Sprintf("  Phase 1 ceiling  : 15 digits (float64)      ", ), bw))
-	webPrint(boxLine(fmt.Sprintf("  Phase 2 achieved : %d digits (big.Float)  ", finalDigits), bw))
-	webPrint(boxLine("  Kerala school · c. 1530 · still climbing     ", bw))
+	webPrint(boxLine("  Phase 1 ceiling  : 15 digits  (float64)     ", bw))
+	webPrint(boxLine(fmt.Sprintf("  Phase 2 achieved : %d digits  (big.Float)  ", finalDigits), bw))
+	webPrint(boxLine("  Kerala school · c.1530 · predates Newton     ", bw))
+	webPrint(boxLine("  by 150 years · still climbing                ", bw))
 	webPrint(boxSep(bw))
 
-	_ = phase1Result // acknowledged, not used -- Phase 2 recomputes cleanly
-	_ = one
 	return 0.0
 }
 
 // ── Phase 1 goroutine machinery ───────────────────────────────────────────────
 
 func pi_nf_web(
-	n int,
-	done chan bool,
-	webPrint func(string),
-	displayChan chan float64,
+    n int,
+    done chan bool,
+    displayChan chan float64,
 	resultChan chan float64,
 	computationDone chan bool,
 	termsCount *int,
@@ -429,7 +443,6 @@ func pi_nf_web(
 	ch := make(chan float64, n)
 	f  := 3.0
 
-	// Launch all n goroutines immediately -- this is the concurrent burst
 	for k := 1; k <= n; k++ {
 		select {
 		case <-done:
@@ -439,7 +452,6 @@ func pi_nf_web(
 		}
 	}
 
-	// Collect results as they arrive, pacing with sleepForTerm
 	for k := 1; k <= n; k++ {
 		select {
 		case <-done:
@@ -460,8 +472,7 @@ func pi_nf_web(
 	return f
 }
 
-// nilakanthaTermWeb computes one term of the Nilakantha series
-// and sends it to the channel. Runs as a goroutine in Phase 1.
+// nilakanthaTermWeb computes one term and sends it to the channel.
 func nilakanthaTermWeb(ch chan float64, k float64) {
 	j := 2 * k
 	if int64(k)%2 == 1 {
