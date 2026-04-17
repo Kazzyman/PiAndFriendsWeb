@@ -229,3 +229,18 @@ func openTerminal() error {
 }
 
 
+  // boxSep returns a separator line: +----...----+  (inner width w dashes)
+func boxSep(w int) string {
+	return "+" + strings.Repeat("-", w) + "+"
+}
+
+// also used in Spigot, and presumably
+func boxLine(content string, w int) string {
+    runeLen := len([]rune(content))
+    if runeLen > w {
+        content = string([]rune(content)[:w])
+        runeLen = w
+    }
+    return "|" + content + strings.Repeat(" ", w-runeLen) + "|"
+}
+

@@ -8,10 +8,19 @@ import (
 
 // @formatter:off
 
-func NilakanthaBig(iters int, precision int, done chan bool, webPrint func(string2 string)) { // Changed signature ::: - -
+func NilakanthaBig(iters int, precision int, done chan bool, webPrint func(string2 string)) { 
 var printThisThen string
 var printThis []string
 var lenOfPi int
+
+	if iters > 1000000000 {
+		webPrint("can not exceed 1 billion iterations, please select a lower value")
+		return 
+	}
+	if precision > 2048 {
+		webPrint("precision must be lower than 2049")
+		return
+	}
 
 	webPrint("... working ...")
 
@@ -22,14 +31,18 @@ var lenOfPi int
 		webPrint("... werkin ...")
 	}
 	if iters > 55111222 {
+		webPrint(" iterations set above 55,111,222 ... so ...")
 		webPrint("... working for a while ...")
 	}
 	if iters > 69111222 {
+		webPrint(" iterations set above 69,111,222 ... so ...")
 		webPrint("... will be working for quite a while ...")
 	}
 	if iters > 80111222 {
+		webPrint(" iterations set above 80,111,222 ... so ...")
 		webPrint("... a very long while ... working ...")
 	}
+
 
 	var iterBig int
 
@@ -147,9 +160,10 @@ var lenOfPi int
 		floatIterBig := float64(iterBig)
 		printableIterbigWithcommas := formatFloat64WithThousandSeparators(floatIterBig)
 
+		webPrint(" ")
 		webPrint(fmt.Sprintf(".... we have matched %d digits in %s iterations: ", lenOfPi, printableIterbigWithcommas))
-
-		webPrint(fmt.Sprintf("hey, rick, pi as calculated herein is: %s", printThisThen))
+		webPrint(" ")
+		webPrint(fmt.Sprintf("pi as calculated herein is: %s", printThisThen))
 		
 	webPrint("")
 

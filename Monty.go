@@ -21,6 +21,8 @@ func MonteCarloWeb(gridSizeAsString string, webPrint func(string)) {
 		withCommas += string(char)
 	}
 	// ::: screen
+	webPrint("You have selected the Monte Carlo Method")
+	webPrint(" ")
 	webPrint(fmt.Sprintf("Size of the grid has been set to: %s", withCommas))
 
 	// convert gridSize to an int

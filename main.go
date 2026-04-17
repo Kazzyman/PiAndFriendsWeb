@@ -96,7 +96,12 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 				outputChan <- s
 			})
 		case "gauss":
-			Gauss_Legendre(func(s string) {
+			itersStr := r.URL.Query().Get("iters")
+			iters, err := strconv.Atoi(itersStr)
+			if err != nil || iters < 1 {
+				iters = 5
+			}
+			Gauss_Legendre(iters, func(s string) {
 				outputChan <- s
 			})
 			// main.go - inside the switch method block
@@ -122,7 +127,15 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 			})
 
 		case "nilakantha_classic":
-			nifty_scoreBoardWeb(done, func(s string) {
+			n1Str := r.URL.Query().Get("n1")
+			n2Str := r.URL.Query().Get("n2")
+			n1, err1 := strconv.Atoi(n1Str)
+			n2, err2 := strconv.Atoi(n2Str)
+			if err1 != nil || n1 < 100  { n1 = 5000  }
+			if err2 != nil || n2 < 100  { n2 = 15000 }
+			if n1 > 10000 { n1 = 10000 }
+			if n2 > 50000 { n2 = 50000 }
+			nifty_scoreBoardWeb(n1, n2, done, func(s string) {
 				outputChan <- s
 			})
 

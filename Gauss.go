@@ -1,142 +1,217 @@
 package main
 
+// Gauss.go
+//
+// The Gauss-Legendre algorithm for computing π.
+// Developed by Carl Friedrich Gauss, refined by Adrien-Marie Legendre.
+//
+// Quadratic convergence: correct digits DOUBLE every iteration.
+//   Iteration  1 →    1 digit
+//   Iteration  5 →   16 digits
+//   Iteration 10 →  512 digits
+//   Iteration 12 → ~2048 digits  (practical web demo ceiling)
+//
+// The algorithm maintains four values:
+//   a  = arithmetic mean  (starts at 1)
+//   b  = geometric mean   (starts at 1/√2)
+//   t  = correction term  (starts at 1/4)
+//   p  = power of 2       (starts at 1)
+//
+// Each iteration:
+//   a_next = (a + b) / 2
+//   b_next = √(a × b)
+//   t_next = t - p × (a - a_next)²
+//   p_next = 2 × p
+//
+// Then: π ≈ (a + b)² / (4 × t)
+//
+// Original float64 version: Richard (Rick) Woolley.
+// Rewritten with big.Float and verified-digit output: April 2026.
+
 import (
 	"fmt"
-	"math"
 	"math/big"
+	"strings"
 	"time"
 )
 
-func Gauss_Legendre(webPrint func(string)) {
-	webPrint("The Gauss-Legendre algorithm is an iterative method to compute π")
-	webPrint("based on the arithmetic-geometric mean (AGM) of two numbers. It was developed by Carl Friedrich Gauss and later refined by Adrien-Marie Legendre.")
-	webPrint("Unlike the Wallis product (a slow-converging product) or Gregory-Leibniz (a slow-converging series), Gauss-Legendre converges quadratically, meaning the")
-	webPrint("number of correct digits roughly doubles with each iteration—making it highly efficient for high-precision calculations.")
+// gaussMaxIters is the hard ceiling on iterations.
+// At iteration 12 you get ~2048 theoretical digits, which takes a few
+// seconds even on slow hardware. Beyond 12 the runtime grows rapidly.
+const gaussMaxIters = 12
 
-	webPrint("Convergence: The values a and b approach the same limit (the AGM), and t sub n adjusts to refine the estimate.")
-	webPrint("The quadratic convergence comes from the squaring in the error terms.")
+// gaussVerifiedDigits walks the computed π string character by character
+// against piForGauss (our ~3000-digit reference) and returns the count
+// of digits after "3." that are correct.
+// Only verified digits are ever shown to the user -- no estimated output.
+func gaussVerifiedDigits(computed string) int {
+	computed = strings.TrimSpace(computed)
+	ref      := piForGauss
 
-	usingBigFloats = false
+	// Walk both strings together. Both start with "3." so we skip
+	// the first two characters when counting, but include them in
+	// the comparison to keep the indices aligned.
+	count := 0
+	for i := 0; i < len(ref) && i < len(computed); i++ {
+		if computed[i] != ref[i] {
+			break
+		}
+		if i >= 2 { // past the "3." prefix
+			count++
+		}
+	}
+	return count
+}
+
+// Gauss_Legendre runs the Gauss-Legendre algorithm for the requested
+// number of iterations, printing only verified correct digits after each.
+func Gauss_Legendre(iters int, webPrint func(string)) {
+
+	// ── Validate user input ───────────────────────────────────────────────
+	if iters > gaussMaxIters {
+		webPrint(fmt.Sprintf("  The maximum number of iterations is %d.", gaussMaxIters))
+		webPrint(fmt.Sprintf("  Beyond that, runtime becomes impractical for a web demo."))
+		webPrint(fmt.Sprintf("  Please choose a number from 1 to %d.", gaussMaxIters))
+		return
+	}
+	if iters < 1 {
+		iters = 1
+	}
+
+	// ── Set big.Float precision dynamically ───────────────────────────────
+	// Each iteration doubles the correct digits, so we need 2^iters decimal
+	// digits of backing precision. Since 3.32 bits ≈ 1 decimal digit, we
+	// set bits = 2^iters * 4, with a floor of 64 to keep early iters sane.
+	precBits := uint(1<<uint(iters)) * 4
+	if precBits < 64 {
+		precBits = 64
+	}
+
+	usingBigFloats = true
 	start := time.Now()
-	var Ricks_value float64 // Rick's code
-	// var exterior_catcher int           // Rick's code
-	// initialize lists
-	pin := []float64{}
-	an := []float64{1}
-	pn := []float64{1}
 
-	tn := []float64{float64(1) / float64(4)} // Rick's improved code, instead of the following ...
-	// ...
-	// tn := []float64{}                      // should have been able to accomplish the next line here as in initialize, see above
-	// tn = append(tn, float64(1)/float64(4)) // append the quotient of 1.0/4.0 to list tn
+	webPrint("  ── Gauss-Legendre Algorithm ───────────────────────────────────")
+	webPrint("  C F Gauss / Adrien-Marie Legendre")
+	webPrint("  Convergence: QUADRATIC — correct digits double each iteration")
+	webPrint(fmt.Sprintf("  Iterations requested : %d  (max %d)", iters, gaussMaxIters))
+	webPrint(fmt.Sprintf("  Precision            : %d bits (~%d decimal digits)",
+		precBits, precBits/4))
+	webPrint("  ───────────────────────────────────────────────────────────────")
+	webPrint("")
+	webPrint("  Starting values:")
+	webPrint("    a₀ = 1")
+	webPrint("    b₀ = 1 / √2")
+	webPrint("    t₀ = 1/4")
+	webPrint("    p₀ = 1")
+	webPrint("")
 
-	bn := []float64{float64(1) / math.Sqrt(2)} // Rick's improved code, instead of the following ...
-	// ...
-	// bn := []float64{}                         // should have been able to accomplish the next line here as in initialize, as above
-	// bn = append(bn, float64(1)/math.Sqrt(2))  // append the quotient of 1.0/sqrt of 2 to list bn
+	// ── Initialize the four values ────────────────────────────────────────
 
-	iters := 3
-	// run the algorithm iters times
-	for i := 0; i < iters; i++ { // call the 5 funcs (a,b,t,p, and pi) defined below, each of which returns just one []float64
-			an = a(an, bn)
-			bn = b(an, bn)
-			tn = t(an, bn, tn) // calls func t and passes to it 4 []float64s
-			// tn = t(an, bn, tn, pn) // calls func t and passes to it 4 []float64s
-			pn = p(pn)
-			pin = pi(an, bn, tn, pin) // pin array ends up containing the 4 values that were calculated for Pi
-			// each time pi is called it returns a new version of a []float64 array
-		
+	two  := new(big.Float).SetPrec(precBits).SetFloat64(2.0)
+	four := new(big.Float).SetPrec(precBits).SetFloat64(4.0)
+
+	// a₀ = 1
+	a := new(big.Float).SetPrec(precBits).SetFloat64(1.0)
+
+	// b₀ = 1 / √2
+	b := new(big.Float).SetPrec(precBits).Sqrt(two)
+	b.Quo(new(big.Float).SetPrec(precBits).SetFloat64(1.0), b)
+
+	// t₀ = 0.25
+	t := new(big.Float).SetPrec(precBits).SetFloat64(0.25)
+
+	// p₀ = 1
+	p := new(big.Float).SetPrec(precBits).SetFloat64(1.0)
+
+	// ── Iterate ───────────────────────────────────────────────────────────
+
+	refDigits := len(piForGauss) - 2 // total digits in our reference (minus "3.")
+
+	for i := 1; i <= iters; i++ {
+
+		// a_next = (a + b) / 2   (arithmetic mean)
+		aNext := new(big.Float).SetPrec(precBits).Add(a, b)
+		aNext.Quo(aNext, two)
+
+		// b_next = √(a × b)   (geometric mean)
+		bNext := new(big.Float).SetPrec(precBits).Mul(a, b)
+		bNext.Sqrt(bNext)
+
+		// t_next = t - p × (a - a_next)²
+		// The term (a - a_next) is the key: it measures how far a moved
+		// this iteration. As a and b converge toward their AGM, this
+		// difference shrinks quadratically -- hence the speed.
+		diff := new(big.Float).SetPrec(precBits).Sub(a, aNext)
+		diff.Mul(diff, diff)  // square it
+		diff.Mul(p, diff)     // multiply by p
+		tNext := new(big.Float).SetPrec(precBits).Sub(t, diff)
+
+		// p_next = 2 × p
+		pNext := new(big.Float).SetPrec(precBits).Mul(two, p)
+
+		// Advance all four values for the next iteration
+		a, b, t, p = aNext, bNext, tNext, pNext
+
+		// ── Compute current π estimate ────────────────────────────────
+		// π ≈ (a + b)² / (4 × t)
+		sumAB := new(big.Float).SetPrec(precBits).Add(a, b)
+		pi    := new(big.Float).SetPrec(precBits).Mul(sumAB, sumAB)
+		pi.Quo(pi, new(big.Float).SetPrec(precBits).Mul(four, t))
+
+		// Convert to string with enough decimal places to saturate our
+		// reference. We then count only what is actually correct.
+		piStr    := pi.Text('f', refDigits+10)
+		verified := gaussVerifiedDigits(piStr)
+
+		// Cap at our reference length -- we cannot claim more than we
+		// can verify.
+		if verified > refDigits {
+			verified = refDigits
+		}
+
+		// Build a display string containing exactly the verified digits.
+		// "3." prefix + verified digits.
+		displayLen := verified + 2
+		displayStr := piStr
+		if len(displayStr) > displayLen {
+			displayStr = displayStr[:displayLen]
+		}
+
+		// The gap between a and b shrinks quadratically -- showing it
+		// makes the convergence speed viscerally obvious.
+		gap := new(big.Float).SetPrec(precBits).Sub(a, b)
+
+		webPrint(fmt.Sprintf("  Iteration %2d  →  %d verified correct digits:", i, verified))
+		webPrint(fmt.Sprintf("  π = %s", displayStr))
+		webPrint(fmt.Sprintf("  gap (a-b) = %s  ← approaches zero quadratically",
+			gap.Text('e', 4)))
+		webPrint("")
 	}
 
-	// print results
-	// this for loop runs 4 times, therefore range pin yielded _ and 4 ???? There are no ';'s after the for, so, ??
-	// ... no, 'range' looks to be a partner to the for itself
-	// ran as ...
-	// for exterior_catcher, value := range pin { // with the two test prints below
-	for _, value := range pin { // skip initializing a counter? no!, not sure exactly all that 'range' does, but when appllied to pin fetches calculated Pi from pin and apparently also another return that is being tossed via _
-			// above 'range' seems to tell the for to "range" accross pin and assign a successive element to 'value', there were 4 elements, so it runs 4 times -- the _ catches the unneeded return from 'range' which starts at 0 and goes to 3 in this loop
-			webPrint(fmt.Sprintf("pin is %.16f, and ... ", pin))            // pin is an aray of calculated values for Pi  // Rick's code to discover same
-			webPrint(fmt.Sprintf("%.16f Was calculated herewith\n", value)) // 'value' created on prior 'for' line and is set 4 times to a successive element of pin
-			Ricks_value = value                                             // Rick's code to grab that final 'value' from last iteration
-			// fmt.Printf("\n\nTop underscore is %d \n\n", exterior_catcher) it starts at 0 and goes to 3
+	// ── Final summary ─────────────────────────────────────────────────────
+
+	elapsed := time.Since(start)
+
+	// Recompute final π for the summary block
+	sumAB := new(big.Float).SetPrec(precBits).Add(a, b)
+	pi    := new(big.Float).SetPrec(precBits).Mul(sumAB, sumAB)
+	pi.Quo(pi, new(big.Float).SetPrec(precBits).Mul(four, t))
+	piStr    := pi.Text('f', refDigits+10)
+	verified := gaussVerifiedDigits(piStr)
+	if verified > refDigits {
+		verified = refDigits
 	}
-	// webPrint(fmt.Sprintf(Ricks_value)) // Rick's code
-	// fmt.Printf("\n\nBottom underscore is %d \n\n", exterior_catcher) this exterior_catcher var is never touched by the for loop
-	webPrint("3.1415926535897932 <-- compared to the actual value of Pi")
-	webPrint("1 23456789012345 counting to fifteen \n")
-	webPrint("   ... via the Gauss–Legendre algorithm ... \n")
+	displayLen := verified + 2
+	displayStr := piStr
+	if len(displayStr) > displayLen {
+		displayStr = displayStr[:displayLen]
+	}
 
-	piAsBF := new(big.Float)
-	piAsBF = big.NewFloat(Ricks_value) // pi is being cast to big from float64
-
-	t := time.Now()
-	elapsed := t.Sub(start)
-	TotalRun := elapsed.String() // cast time durations to a String type for Fprintf "formatted print"
-
-	webPrint(fmt.Sprintf("Pi is %0.9f, and run was %s\n", piAsBF, TotalRun))
-	// printResultStatsLong(piAsBF, 0, "Gauss–Legendre", iters, TotalRun, selection)
+	webPrint("  ── Final Result ────────────────────────────────────────────────")
+	webPrint(fmt.Sprintf("  %d iterations completed in %s",
+		iters, elapsed.Round(time.Millisecond)))
+	webPrint(fmt.Sprintf("  %d verified correct digits of π", verified))
+	webPrint("")
+	webPrint(fmt.Sprintf("  π = %s", displayStr))
+	webPrint("  ───────────────────────────────────────────────────────────────")
 }
-
-// helper functions follow:
-func a(an, bn []float64) []float64 { // func a accepts an and bn of type []float64, and returns a []float64
-	a := (an[len(an)-1] + bn[len(bn)-1]) / float64(2) // create local 'a' = (element of an indexed by len of an-1) + (element of bn indexed by len of bn-1) ??
-	an = append(an, a)                                // append a to an
-	return an
-}
-func b(an, bn []float64) []float64 {
-	b := math.Sqrt(an[len(an)-2] * bn[len(bn)-1]) // create local 'b' = (sqrt of element an indexed by len of an-2) * (element of bn indexed by len of bn-1) ??
-	bn = append(bn, b)
-	return bn
-}
-// func t(an, bn, tn, pn []float64) []float64 { // accepts 4 parameters of type []float64, and returns a []float64
-func t(an, tn, pn []float64) []float64 { // accepts 4 parameters of type []float64, and returns a []float64
-	t := tn[len(tn)-1] - pn[len(pn)-1]*math.Pow((an[len(an)-2]-an[len(an)-1]), 2)
-	tn = append(tn, t)
-	return tn
-}
-func p(pn []float64) []float64 { // accepts one []float64
-	p := 2 * pn[len(pn)-1] // create local p as 2 * the element of pn indexed by len(pn)-1
-	pn = append(pn, p)
-	return pn
-}
-func pi(an, bn, tn, pin []float64) []float64 { // this func is all about appending just one value to pin ...
-	pi := math.Pow((an[len(an)-1]+bn[len(bn)-1]), 2) / (4 * tn[len(tn)-1]) // ... and this is that value ... x^2 / (4 * an element from tn) ... x = two elements added together
-	//                                             ^2
-	pin = append(pin, pi)
-	return pin
-	// adapted by Richard Woolley
-} // End of Gauss_Legendre Set // case 37: // -- AMFGauss_LegendreB
-
-/*
-//Gemini suggested this on Saturday April 11 2026 @ 05:49AM
-func Gauss_Legendre(webPrint func(string)) {
-    webPrint("Initializing Gauss-Legendre algorithm...")
-
-    // Set precision high enough for the iterative power
-    prec := uint(1024)
-    a := big.NewFloat(1).SetPrec(prec)
-    b := new(big.Float).SetPrec(prec).Quo(big.NewFloat(1), new(big.Float).Sqrt(big.NewFloat(2)))
-    t := big.NewFloat(0.25).SetPrec(prec)
-    p := big.NewFloat(1).SetPrec(prec)
-
-    for i := 1; i <= 5; i++ { // Even 5 iterations give massive precision
-        a_next := new(big.Float).SetPrec(prec).Add(a, b).Quo(new(big.Float).Add(a, b), big.NewFloat(2))
-        // b = sqrt(a * b)
-        b_next := new(big.Float).SetPrec(prec).Sqrt(new(big.Float).Mul(a, b))
-
-        // t = t - p * (a - a_next)^2
-        diff := new(big.Float).Sub(a, a_next)
-        t.Sub(t, new(big.Float).Mul(p, new(big.Float).Mul(diff, diff)))
-
-        a, b = a_next, b_next
-        p.Mul(p, big.NewFloat(2))
-
-        // Calculate current Pi estimate: (a + b)^2 / (4 * t)
-        sumAB := new(big.Float).Add(a, b)
-        pi := new(big.Float).Quo(new(big.Float).Mul(sumAB, sumAB), new(big.Float).Mul(big.NewFloat(4), t))
-
-        webPrint(fmt.Sprintf("Iteration %d Pi: %s", i, pi.Text('f', 100)))
-    }
-    webPrint("Gauss-Legendre calculation complete.")
-}
-*/

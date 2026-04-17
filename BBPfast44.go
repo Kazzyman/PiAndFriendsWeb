@@ -8,7 +8,7 @@ import (
 )
 
 func bbpFast44(webPrint func(string), digits int, done chan bool) { // case 42: // -- AMFbbp_formulaA
-	webPrint(fmt.Sprintf("bbpFast46 executed with %d digits", digits))
+	webPrint(fmt.Sprintf("BBP executed with %d digits", digits))
 
 	usingBigFloats = true
 	start := time.Now()

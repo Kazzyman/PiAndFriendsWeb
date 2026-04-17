@@ -62,10 +62,18 @@ func chudnovskyBig(webPrint func(string), digits int, done chan bool) { // ::: -
 // calculate Pi for n number of digits
 // func calcPi(webPrint func(string), digits float64, start time.Time, done chan bool, float *big.Float) (int, time.Time, *big.Float) { // Removed the float *big.Float
 func calcPi(webPrint func(string), digits float64, start time.Time, done chan bool) (int, time.Time, *big.Float) {
-	webPrint("This is an implementation for https://en.wikipedia.org/wiki/Chudnovsky_algorithm")
-	webPrint("It can be improved using binary splitting http://numbers.computation.free.fr/Constants/Algorithms/splitting.html")
-	webPrint("if we were to split it into two independent parts and simplify the formula. For more details, visit:")
-	webPrint("https://www.craig-wood.com/nick/articles/pi-chudnovsky")
+	webPrint(" ")
+	webPrint("This is an implementation of the Chudnovsky_algorithm")
+	webPrint("   https://en.wikipedia.org/wiki/Chudnovsky_algorithm")
+	webPrint(" ")
+	webPrint("It can be improved using binary splitting")
+	webPrint("   http://numbers.computation.free.fr/Constants/Algorithms/splitting.html")
+	webPrint("... if we were to split it into two independent parts and simplify the formula")
+	webPrint(" ")
+	webPrint("For more details, visit:")
+	webPrint("   https://www.craig-wood.com/nick/articles/pi-chudnovsky")
+	webPrint(" ")
+	webPrint(" ")
 
 	var i int
 

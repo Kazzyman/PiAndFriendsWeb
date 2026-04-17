@@ -9,14 +9,10 @@ import (
 // @formatter:off
 
 func JohnWallis(done chan bool, webPrint func(string)) float64 { // case 8: // -- AMFJohnWallisA
-	webPrint("I am here in JW")
-	// ::: it makes it to here before hanging
-
-	webPrint("The forgoing is the entire code for this method.")
-
-	usingBigFloats = false
 	webPrint("   You selected A Go language exercize which can be used to test the speed of your hardware.")
+	webPrint(" ")
 	webPrint("   We will calculate π to a maximum of ten digits of accuracy using an infinite series by John Wallis circa 1655")
+	webPrint(" ")
 	webPrint("   Up to 40 Billion iterations of the following formula will be executed ")
 	webPrint("   π = 2 * ((2/1)*(2/3)) * ((4/3)*(4/5)) * ((6/5)*(6/7)) ...")
 	start := time.Now()
