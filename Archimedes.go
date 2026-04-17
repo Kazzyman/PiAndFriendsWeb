@@ -198,7 +198,7 @@ func ArchimedesBig(webPrint func(string)) {
 			webPrint(fmt.Sprintf("All Done! So, how many sides does our polygon have now? A lot: A staggering:%sSIDED POLYGON !!!", formattedNum))
 
 			webPrint(fmt.Sprintf("%d iterations were completed to yeild well over 2,700 correct digits of π!!!", i))
-			webPrint(fmt.Sprintf("Go's math/big objects were set to a precision value of: %d  --- here is your GIANT slice of pie:", precision))
+			webPrint(fmt.Sprintf("Go's math/big objects were set to a precision value of: %d  --- here is your GIANT slice of pie: %.2800f", precision, p_d))
 			// webPrint(fmt.Sprintf("  %.3020f per Rick's modified Archimedes' method, formatted: 3020f", p_d)) // I don't think that this was an issue.
 
 			_, lenOfPi := checkPiTo59766(p_d) // sets global var lenOfPi // Sets the global lenOfPi [the calculated and verified quantity of digits of pi]
