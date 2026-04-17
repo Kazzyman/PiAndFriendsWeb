@@ -295,6 +295,17 @@
     </button>
 </div>
 
+<button id="toggleSidebar" onclick="toggleSide()" style="
+    writing-mode: vertical-rl;
+    background: #414868;
+    color: #a9b1d6;
+    border: none;
+    cursor: pointer;
+    padding: 8px 4px;
+    font-size: 11px;
+    flex-shrink: 0;
+    align-self: stretch;
+">▲ menu</button>
 
 <div id="console">
     <div id="output">By Richard (Rick) Woolley.<br>
@@ -311,6 +322,18 @@ Select a method from the panel on the left to begin...<span id="cursor"></span><
 <script>
     // ::: BEGIN script functions
     let currentEventSource = null;
+
+    function toggleSide() {
+        const sidebar = document.getElementById('sidebar');
+        const btn = document.getElementById('toggleSidebar');
+        if (sidebar.style.display === 'none') {
+            sidebar.style.display = 'flex';
+            btn.textContent = '▲ menu';
+        } else {
+            sidebar.style.display = 'none';
+            btn.textContent = '▼ menu';
+        }
+    }
 
 // Roots
     function startRoots() {
@@ -526,7 +549,7 @@ function copyOutput() {
         currentEventSource = null;
     }
     
-    document.getElementById('sidebar').classList.remove('collapsed');
+    // document.getElementById('sidebar').classList.remove('collapsed');
     document.getElementById('status').innerText = "System Ready.";
 
     if (clearScreen) {
@@ -545,7 +568,7 @@ Select a method from the panel on the left to begin...<span id="cursor"></span>`
 // ::: EVENTS start
     function start(method) {
         stopCurrent(false);
-        document.getElementById('sidebar').classList.add('collapsed');
+        // document.getElementById('sidebar').classList.add('collapsed');
         const out = document.getElementById('output');
         const status = document.getElementById('status');
         out.innerHTML = 'By Richard (Rick) Woolley.\nBack-end written in Go (golang).\nSource code available at https://github.com/Kazzyman/PiAndFriendsWeb.\n\n<span id="cursor"></span>';
