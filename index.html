@@ -297,10 +297,10 @@
 
 
 <div id="console">
-    <div id="output">By Richard (Rick) Woolley.
-        Back-end written in Go (golang).
-        Source code available at https://github.com/Kazzyman/PiAndFriendsWeb.<br>
-        Select a method from the panel on the left to begin...<span id="cursor"></span></div>
+    <div id="output">By Richard (Rick) Woolley.<br>
+Back-end written in Go (golang).
+Source code available at https://github.com/Kazzyman/PiAndFriendsWeb.<br>
+Select a method from the panel on the left to begin...<span id="cursor"></span></div>
     <div id="status" style="padding: 10px 25px 10px 25px; color: #7aa2f7; font-size: 12px; font-style: italic; flex-shrink: 0;"></div>
 </div>
 
@@ -532,7 +532,8 @@ function copyOutput() {
     if (clearScreen) {
         const output = document.getElementById('output');
         output.innerHTML = 
-            `By Richard (Rick) Woolley.
+`By Richard (Rick) Woolley.
+
 Back-end written in Go (golang).
 Source code available at https://github.com/Kazzyman/PiAndFriendsWeb.<br>
 Select a method from the panel on the left to begin...<span id="cursor"></span>`;
