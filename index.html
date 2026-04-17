@@ -68,6 +68,42 @@
             color: white;
             padding: 5px;
         }
+          /* On small screens, stack sidebar on top of console instead of side by side */
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+                height: auto;
+                overflow: auto;
+            }
+
+            #sidebar {
+                width: 100%;
+                min-width: unset;
+                max-height: 50vh;
+                overflow-y: auto;
+                border-right: none;
+                border-bottom: 1px solid #414868;
+            }
+
+            #console {
+                height: 70vh;
+                min-height: 400px;
+            }
+
+            #output {
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 900px) and (orientation: landscape) {
+            #sidebar {
+                max-height: 35vh;
+            }
+
+            #console {
+                height: 60vh;
+            }
+        }
     </style>
 </head>
 /*
