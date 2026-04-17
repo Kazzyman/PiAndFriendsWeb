@@ -186,7 +186,7 @@ func ArchimedesBig(done chan bool, webPrint func(string)) {
 
 		// Paced sleeps -- each one is interruptible by the done channel.
 		var sleepDur time.Duration
-		switch {
+switch {
 		case i < 24:
 			if i == 2 { webPrint("\t\tSleeping each iteration for 135 milliseconds...") }
 			sleepDur = 135 * time.Millisecond
