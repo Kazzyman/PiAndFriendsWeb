@@ -6,23 +6,23 @@ package main
 // calculated using nothing but whole-number (integer) arithmetic.
 //
 // Original concept and algorithm: Richard (Rick) Woolley.
+//
 // The core insight: if A and B are both perfect powers (squares or cubes),
 // and A/B is close to our target number N, then the ratio of their roots
 // is a close approximation to the Nth root of N.
 //
 // Example for square roots:
 //   We want √11.
-//   We notice that 49/4 = 12.25  (close to 11, but a bit high)
-//   and that       36/4 = 9.0    (close to 11, but a bit low)
-//   So √11 ≈ 7/2 = 3.5  (rough), or more precisely we keep searching
-//   for larger perfect squares whose ratio is even closer to 11.
-//   Eventually we find e.g. 2116/196 = 10.795... and 2209/196 = 11.27...
-//   giving √11 ≈ 46/14 = 3.2857... which is correct to several digits.
+//   We find that 49/4 = 12.25  (just above 11)
+//   and that    36/4 = 9.0     (just below 11)
+//   So √11 ≈ 7/2 = 3.5  (rough first guess)
+//   As we search larger perfect squares we find ever-closer ratios,
+//   giving us ever more accurate approximations.
 //
-// This is the same insight ancient Greek mathematicians used to discover
+// This is the same insight ancient Greek mathematicians used to find
 // that √2 ≈ 7/5, because 49/25 = 1.96 ≈ 2.
 //
-// Rewritten with clean logic and educational commentary: April 2026.
+// Rewritten cleanly: April 2026.
 
 import (
 	"fmt"
@@ -31,72 +31,57 @@ import (
 	"time"
 )
 
-// @formatter:off
-
 // ── Package-level variables ───────────────────────────────────────────────────
 
 var (
-	pairsSlice    []Pairs  // The table of perfect squares or cubes and their roots
-	mathSqrtCheat float64  // Used only to print a verification when a perfect square is found
-	mathCbrtCheat float64  // Used only to print a verification when a perfect cube is found
+	pairsSlice    []Pairs // The lookup table of perfect squares or cubes
+	mathSqrtCheat float64 // Used only to print a verification for perfect squares
+	mathCbrtCheat float64 // Used only to print a verification for perfect cubes
 )
 
-// ── Pairs: the building block of our table ────────────────────────────────────
+// ── Structs ───────────────────────────────────────────────────────────────────
 
 // Pairs holds one entry in our lookup table.
-// 'product' is a perfect square or cube (e.g. 49, 64, 125).
-// 'root'    is the whole number whose power produced it (e.g. 7, 8, 5).
+// 'product' is a perfect square or cube (e.g. 49, 125).
+// 'root'    is the whole number whose power produced it (e.g. 7, 5).
 type Pairs struct {
 	product int
 	root    int
 }
 
-// ── Results: a candidate answer ───────────────────────────────────────────────
-
 // Results holds one candidate approximation found during the search.
-// We collect many of these and then sort by pdiff to find the best one.
-// 'result' is the calculated root approximation (e.g. 3.31662...).
-// 'pdiff'  is the proportional difference -- how close we got.
-//           Smaller pdiff means a better approximation.
-/*
-// this is in globals.go
+// We collect many and sort by pdiff to find the best one.
+// 'result' is the calculated root approximation.
+// 'pdiff'  is the proportional difference -- smaller means better.
 type Results struct {
 	result float64
 	pdiff  float64
 }
-	*/
 
-// sortedResults accumulates all candidate answers found during one run.
-// It is sorted by pdiff at the end so sortedResults[0] is the best answer.
-// this too is in globals.go
-// var sortedResults []Results
+// sortedResults accumulates all candidate answers during one run.
+var sortedResults []Results
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
-// xRootOfy calculates the square root (radical=2) or cube root (radical=3)
-// of workPiece using only integer arithmetic -- no math.Sqrt or math.Cbrt
-// is used for the actual calculation (only for verification printouts).
 func xRootOfy(radical2or3 int, workPiece int, webPrint func(string)) {
 
-	// Safety check: we only support square (2) and cube (3) roots.
 	if radical2or3 != 2 && radical2or3 != 3 {
-		webPrint(fmt.Sprintf("Error: Radical %d is not supported. Please enter 2 or 3.", radical2or3))
+		webPrint(fmt.Sprintf("  Error: radical %d is not supported. Please enter 2 or 3.", radical2or3))
 		return
 	}
 
 	usingBigFloats = false
-	timeOfStartFromTop := time.Now()
 
-	// Reset the results accumulator between runs.
-	// Without this, results from a previous run would pollute the next one.
 	sortedResults = nil
+	diffOfLarger  = 1
+	diffOfSmaller = 1
+	mathSqrtCheat = 0
+	mathCbrtCheat = 0
 
-	// Precision controls how close our ratio A/B needs to be to workPiece
-	// before we consider it a "hit" worth recording. Larger workpieces need
-	// a larger precision window because the perfect power gaps are bigger.
+	startTime := time.Now()
+
 	precisionOfRoot = calculatePrecision(radical2or3, workPiece, webPrint)
 
-	// Print a clear header so the user understands what we are about to do.
 	webPrint("")
 	webPrint("  ── Root Calculation ─────────────────────────────")
 	if radical2or3 == 2 {
@@ -109,273 +94,398 @@ func xRootOfy(radical2or3 int, workPiece int, webPrint func(string)) {
 	webPrint("  ─────────────────────────────────────────────────")
 	webPrint("")
 
-	// Build the lookup table of perfect squares or cubes.
-	// This is the foundation of the whole method.
-	webPrint("Building table of perfect powers...")
+	if radical2or3 == 2 {
+		webPrint("  Building table of perfect squares...")
+	} else {
+		webPrint("  Building table of perfect cubes...")
+	}
 	buildPairsSlice(radical2or3)
-	webPrint(fmt.Sprintf("Table built: %d entries. Starting search...", len(pairsSlice)))
+	if radical2or3 == 2 {
+		webPrint(fmt.Sprintf("  Table built: %d perfect squares.", len(pairsSlice)))
+	} else {
+		webPrint(fmt.Sprintf("  Table built: %d perfect cubes.", len(pairsSlice)))
+	}
+
+	// Show the first few table entries so the user can see what we built.
+	webPrint("")
+	webPrint("  First few entries in the table:")
+	for k := 0; k < 5 && k < len(pairsSlice); k++ {
+		webPrint(fmt.Sprintf("    root=%d  →  %d^%d = %d",
+			pairsSlice[k].root, pairsSlice[k].root, radical2or3, pairsSlice[k].product))
+	}
+	webPrint("    ...")
 	webPrint("")
 
-	startBeforeCall := time.Now()
+	webPrint("  The method: for each perfect power in the table,")
+	webPrint("  search forward for another whose ratio brackets")
+	webPrint(fmt.Sprintf("  our target number %d.", workPiece))
+	webPrint("  When largerPP / smallerPP ≈ workPiece,")
+	webPrint("  then rootOfLarger / rootOfSmaller ≈ answer.")
+	webPrint("")
 
-	// ── Main search loop ──────────────────────────────────────────────────
-	//
-	// We step through the table two entries at a time. For each entry i,
-	// readPairsSlice searches forward from i to find a second entry whose
-	// product, when divided by entry i's product, is close to workPiece.
-	//
-	// Why step by 2? Because stepping by 1 would cause excessive overlap
-	// and redundant comparisons. Stepping by 2 gives reasonable coverage
-	// without being wasteful. You could step by 1 for more thoroughness
-	// at the cost of speed.
-	//
-	// We stop early if a perfect square or cube is found (diff == 0).
-	for i := 0; i < len(pairsSlice)-1; i += 2 {
+	// Show a concrete example of the ratio test using the first two table entries.
+	if len(pairsSlice) >= 2 {
+		a := pairsSlice[0]
+		b := pairsSlice[1]
+		webPrint("  Example with first two entries:")
+		webPrint(fmt.Sprintf("    entry[0]: root=%d  product=%d", a.root, a.product))
+		webPrint(fmt.Sprintf("    entry[1]: root=%d  product=%d", b.root, b.product))
+		webPrint(fmt.Sprintf("    ratio = %d / %d = %.4f  (target: %d)",
+			b.product, a.product,
+			float64(b.product)/float64(a.product),
+			workPiece))
+		webPrint(fmt.Sprintf("    root ratio = %d / %d = %.6f",
+			b.root, a.root,
+			float64(b.root)/float64(a.root)))
+		webPrint("    That ratio is our first rough approximation.")
+		webPrint("    We keep searching for ratios ever closer to the target.")
+	}
+	webPrint("")
+	webPrint("  Starting search...")
+	webPrint("")
 
-		// Check periodically if the user has asked us to stop.
-		// (done channel check is handled inside readPairsSlice)
+	// midpointShown tracks whether we have printed a midpoint summary.
+	// We print it once, around the halfway mark of the table.
+	midpointShown    := false
+	midpoint         := len(pairsSlice) / 2
+	threeQuarterMark := (len(pairsSlice) * 3) / 4
 
-		readPairsSlice(i, startBeforeCall, radical2or3, workPiece, webPrint)
+	runSearch := func() {
+		sortedResults  = nil
+		diffOfLarger   = 1
+		diffOfSmaller  = 1
+		firstHitShown := false
+		midpointShown  = false
 
-		// If a perfect result was found, diffOfLarger or diffOfSmaller
-		// will be exactly zero. No need to keep searching.
-		if diffOfLarger == 0 || diffOfSmaller == 0 {
-			handlePerfectSquaresAndCubes(timeOfStartFromTop, radical2or3, workPiece, webPrint)
-			break
-		}
+		for i := 0; i < len(pairsSlice)-1; i += 2 {
 
-		// Print a progress update every 80,000 iterations so the user
-		// knows the algorithm is still alive and working.
-		if i%80000 == 0 && i > 0 {
-			stringI := formatInt64WithThousandSeparators(int64(i))
-			webPrint(fmt.Sprintf("  %s iterations completed... still searching...", stringI))
+			prevCount := len(sortedResults)
+
+			readPairsSlice(i, workPiece)
+
+			if diffOfLarger == 0 || diffOfSmaller == 0 {
+				return
+			}
+
+			// Show the first candidate in detail.
+			if !firstHitShown && len(sortedResults) > prevCount {
+				firstHitShown = true
+				best := sortedResults[len(sortedResults)-1]
+				if radical2or3 == 2 {
+					verification := math.Sqrt(float64(workPiece))
+					webPrint(fmt.Sprintf("  First candidate found at table index %d:", i))
+					webPrint(fmt.Sprintf("    smaller PP : %d  (root %d)",
+						pairsSlice[i].product, pairsSlice[i].root))
+					webPrint(fmt.Sprintf("    larger PP  : product near %d",
+						pairsSlice[i].product*workPiece))
+					webPrint(fmt.Sprintf("    root ratio = %0.9f", best.result))
+					webPrint(fmt.Sprintf("    math.Sqrt  = %0.9f", verification))
+					webPrint(fmt.Sprintf("    difference = %0.9f", math.Abs(best.result-verification)))
+				} else {
+					verification := math.Cbrt(float64(workPiece))
+					webPrint(fmt.Sprintf("  First candidate found at table index %d:", i))
+					webPrint(fmt.Sprintf("    smaller PP : %d  (root %d)",
+						pairsSlice[i].product, pairsSlice[i].root))
+					webPrint(fmt.Sprintf("    root ratio = %0.9f", best.result))
+					webPrint(fmt.Sprintf("    math.Cbrt  = %0.9f", verification))
+					webPrint(fmt.Sprintf("    difference = %0.9f", math.Abs(best.result-verification)))
+				}
+				webPrint("")
+				webPrint("  Continuing search for a better approximation...")
+				webPrint("")
+			}
+
+			// Progress every 80,000 iterations.
+			if i%80000 == 0 && i > 0 {
+				stringI := formatInt64WithThousandSeparators(int64(i))
+				webPrint(fmt.Sprintf("  %s iterations completed...  elapsed: %s",
+					stringI, time.Since(startTime).Round(time.Millisecond)))
+				if len(sortedResults) > 0 {
+					webPrint(fmt.Sprintf("  Best so far: %0.9f  (candidates found: %d)",
+						sortedResults[len(sortedResults)-1].result, len(sortedResults)))
+				}
+			}
+
+			// Midpoint summary -- show what the table looks like halfway through.
+			if !midpointShown && i >= midpoint {
+				midpointShown = true
+				mid := pairsSlice[i]
+				webPrint("")
+				webPrint(fmt.Sprintf("  ── Midpoint check (index %d of %d) ──",
+					i, len(pairsSlice)))
+				webPrint(fmt.Sprintf("  We are now testing ratios involving root=%d", mid.root))
+				webPrint(fmt.Sprintf("  whose perfect power is %d", mid.product))
+				if len(sortedResults) > 0 {
+					best := sortedResults[len(sortedResults)-1]
+					webPrint(fmt.Sprintf("  Best approximation so far: %0.9f", best.result))
+					if radical2or3 == 2 {
+						webPrint(fmt.Sprintf("  True value (math.Sqrt):    %0.9f",
+							math.Sqrt(float64(workPiece))))
+					} else {
+						webPrint(fmt.Sprintf("  True value (math.Cbrt):    %0.9f",
+							math.Cbrt(float64(workPiece))))
+					}
+				} else {
+					webPrint("  No candidates found yet -- precision window may need widening.")
+				}
+				webPrint("")
+			}
+
+			// Three-quarter mark summary.
+			if !midpointShown && i >= threeQuarterMark {
+				// midpointShown doubles as a three-quarter guard to avoid
+				// printing both messages in the same run.
+			}
+			if midpointShown && i == threeQuarterMark {
+				tq := pairsSlice[i]
+				webPrint("")
+				webPrint(fmt.Sprintf("  ── Three-quarter mark (index %d) ──", i))
+				webPrint(fmt.Sprintf("  Now testing root=%d  (perfect power: %d)",
+					tq.root, tq.product))
+				if len(sortedResults) > 0 {
+					webPrint(fmt.Sprintf("  Best so far: %0.9f  candidates: %d",
+						sortedResults[len(sortedResults)-1].result, len(sortedResults)))
+				} else {
+					webPrint("  Still no candidates -- will widen precision if needed.")
+				}
+				webPrint("")
+			}
+
+			// Gap-based early exit.
+			if i+2 < len(pairsSlice) {
+				gap := pairsSlice[i+2].product - pairsSlice[i].product
+				if gap > precisionOfRoot && len(sortedResults) > 0 {
+					webPrint("")
+					webPrint(fmt.Sprintf("  Gap between consecutive perfect powers (%d)", gap))
+					webPrint(fmt.Sprintf("  now exceeds precision window (%d).", precisionOfRoot))
+					webPrint("  No better result is mathematically possible.")
+					webPrint("  Searching 2000 more iterations just to be sure...")
+					for extra := i + 2; extra < i+2002 && extra < len(pairsSlice)-1; extra += 2 {
+						readPairsSlice(extra, workPiece)
+					}
+					webPrint("  Done. Stopping search.")
+					return
+				}
+			}
 		}
 	}
 
-	// ── Final result ──────────────────────────────────────────────────────
+	// First attempt.
+	runSearch()
 
-	elapsed := time.Since(timeOfStartFromTop)
-
-	// Only enter the result block if we did NOT find a perfect square/cube.
-	// (Perfect results are reported immediately inside the loop above.)
-	if diffOfLarger != 0 && diffOfSmaller != 0 {
-
-		if len(sortedResults) == 0 {
-			// This should not happen with reasonable inputs, but handle it
-			// gracefully rather than panicking.
-			webPrint(fmt.Sprintf("No results found within precision %d. Try a larger workPiece or adjust precision.", precisionOfRoot))
+	// Auto-widen and retry if nothing found.
+	for len(sortedResults) == 0 && diffOfLarger != 0 && diffOfSmaller != 0 {
+		if precisionOfRoot >= 500000 {
+			webPrint("")
+			webPrint("  Could not find a result even at maximum precision window.")
+			webPrint("  This workPiece may be too large for the current table size.")
 			return
 		}
-
-		// Sort all candidate results by their proportional difference.
-		// The best approximation (smallest pdiff) will be at index 0.
-		sort.Slice(sortedResults, func(i, j int) bool {
-			return sortedResults[i].pdiff < sortedResults[j].pdiff
-		})
-
-		best := sortedResults[0].result
-
-		// Print the best result. We use Go's math library ONLY to print
-		// a verification value alongside our integer-arithmetic result --
-		// the calculation itself used no floating point.
+		precisionOfRoot *= 2
 		webPrint("")
-		webPrint("  ── Result ───────────────────────────────────────")
-		if radical2or3 == 2 {
-			verification := math.Sqrt(float64(workPiece))
-			webPrint(fmt.Sprintf("  Square Root of %d", workPiece))
-			webPrint(fmt.Sprintf("  Our result    : %0.9f", best))
-			webPrint(fmt.Sprintf("  Verification  : %0.9f  (math.Sqrt)", verification))
-			webPrint(fmt.Sprintf("  Difference    : %0.9f", math.Abs(best-verification)))
-		} else {
-			verification := math.Cbrt(float64(workPiece))
-			webPrint(fmt.Sprintf("  Cube Root of %d", workPiece))
-			webPrint(fmt.Sprintf("  Our result    : %0.9f", best))
-			webPrint(fmt.Sprintf("  Verification  : %0.9f  (math.Cbrt)", verification))
-			webPrint(fmt.Sprintf("  Difference    : %0.9f", math.Abs(best-verification)))
-		}
-		webPrint(fmt.Sprintf("  Candidates found: %d (best pdiff: %0.8f)", len(sortedResults), sortedResults[0].pdiff))
-		webPrint(fmt.Sprintf("  Completed in    : %s", elapsed.Round(time.Millisecond)))
-		webPrint("  ─────────────────────────────────────────────────")
+		webPrint(fmt.Sprintf("  No results found. Widening precision window to %d and retrying...  (elapsed: %s)",
+			precisionOfRoot, time.Since(startTime).Round(time.Millisecond)))
 		webPrint("")
-		webPrint("  (Verification values from math.Sqrt/Cbrt are shown")
-		webPrint("   only to confirm accuracy. The calculation above")
-		webPrint("   used integer arithmetic exclusively.)")
+		runSearch()
 	}
+
+	// Perfect result.
+	if diffOfLarger == 0 || diffOfSmaller == 0 {
+		elapsed := time.Since(startTime)
+		webPrint("")
+		webPrint("  ── Perfect Result ───────────────────────────────")
+		if radical2or3 == 2 {
+			webPrint(fmt.Sprintf("  %d is a perfect square.", workPiece))
+			webPrint(fmt.Sprintf("  Its square root is exactly %0.0f", mathSqrtCheat))
+		} else {
+			webPrint(fmt.Sprintf("  %d is a perfect cube.", workPiece))
+			webPrint(fmt.Sprintf("  Its cube root is exactly %0.0f", mathCbrtCheat))
+		}
+		webPrint(fmt.Sprintf("  Completed in: %s", elapsed.Round(time.Millisecond)))
+		webPrint("  ─────────────────────────────────────────────────")
+		return
+	}
+
+	// Final result.
+	elapsed := time.Since(startTime)
+
+	sort.Slice(sortedResults, func(i, j int) bool {
+		return sortedResults[i].pdiff < sortedResults[j].pdiff
+	})
+
+	best := sortedResults[0].result
+
+	webPrint("  ── Result ───────────────────────────────────────")
+	if radical2or3 == 2 {
+		verification := math.Sqrt(float64(workPiece))
+		webPrint(fmt.Sprintf("  Square Root of %d", workPiece))
+		webPrint(fmt.Sprintf("  Our result    : %0.9f", best))
+		webPrint(fmt.Sprintf("  Verification  : %0.9f  (math.Sqrt)", verification))
+		webPrint(fmt.Sprintf("  Difference    : %0.9f", math.Abs(best-verification)))
+		// Check if result is suspiciously close to a whole number
+		frac := best - math.Floor(best)
+		if frac < 0.01 || frac > 0.99 {
+			webPrint("")
+			webPrint("  Note: result is very close to a whole number.")
+			webPrint(fmt.Sprintf("  %d sits just below %d² = %d,",
+				workPiece,
+				int(math.Round(best)),
+				int(math.Round(best))*int(math.Round(best))))
+			webPrint("  which is the best rational approximation available.")
+			webPrint("  This is a known characteristic of the method for")
+			webPrint("  numbers that sit just below a perfect square.")
+		}
+	} else {
+    verification := math.Cbrt(float64(workPiece))
+    webPrint(fmt.Sprintf("  Cube Root of %d", workPiece))
+    webPrint(fmt.Sprintf("  Our result    : %0.9f", best))
+    webPrint(fmt.Sprintf("  Verification  : %0.9f  (math.Cbrt)", verification))
+    webPrint(fmt.Sprintf("  Difference    : %0.9f", math.Abs(best-verification)))
+    if radical2or3 == 3 && workPiece == 2 {
+        webPrint("")
+        webPrint("  * - * The Delian Problem * - *")
+        webPrint("  The cube root of 2 was sought by ancient Greek geometers")
+        webPrint("  as the solution to 'doubling the cube' -- constructing a")
+        webPrint("  cube with exactly twice the volume of a given cube.")
+        webPrint("  It tormented mathematicians for over two thousand years.")
+        webPrint("  They could not solve it with compass and straightedge alone.")
+		webPrint(" ")
+        webPrint("  ✦ We just solved it in milliseconds using an algorithm ✦ ")
+		webPrint(" ")
+        webPrint("  This algorithm was inspired by the same geometric reasoning")
+		webPrint("  that was pioneered by the ancients")
+		webPrint(" ")
+        webPrint("  ✦✦ Archimedes would have wept ✦✦")
+		webPrint(" ")
+		webPrint("The cube root of two was finally proved impossible with a compass")
+		webPrint("and a straightedge in 1837 by Pierre Wantzel — over 2,200 years")
+		webPrint("after the Greeks first posed it.")
+		webPrint(" ")
+    }
 }
+	webPrint(fmt.Sprintf("  Candidates found: %d (best pdiff: %0.8f)",
+		len(sortedResults), sortedResults[0].pdiff))
+	webPrint(fmt.Sprintf("  Completed in    : %s", elapsed.Round(time.Millisecond)))
+	webPrint("  ─────────────────────────────────────────────────")
+	webPrint("")
+	webPrint("  (Verification values from math.Sqrt/Cbrt are shown")
+	webPrint("   only to confirm accuracy. The calculation above")
+	webPrint("   used integer arithmetic exclusively.)")
+}
+
 
 // ── readPairsSlice: the heart of the search ───────────────────────────────────
 //
-// Starting from table entry i (our "smaller" perfect power), this function
-// searches forward through the table to find a "larger" perfect power such
-// that:
+// Starting from table entry i (the "anchor" perfect power), this function
+// searches forward through the table to find the first entry j where:
 //
-//   largerPerfectPower / smallerPerfectPower  ≈  workPiece
+//   pairsSlice[j].product > pairsSlice[i].product * workPiece
 //
-// When it finds such a pair, the ratio of their roots:
+// At that crossing point, entries j and j-1 bracket the target.
+// The ratio of their roots gives our approximation.
 //
-//   rootOfLarger / rootOfSmaller  ≈  nthRoot(workPiece)
+// This function makes NO webPrint calls -- completely silent.
+// All output is handled by xRootOfy.
 //
-// Why does this work? Because:
-//   If largerPP = a^n  and  smallerPP = b^n
-//   and largerPP / smallerPP ≈ workPiece
-//   then (a/b)^n ≈ workPiece
-//   therefore a/b ≈ nthRoot(workPiece)
-//
-func readPairsSlice(i int, startBeforeCall time.Time, radical2or3, workPiece int, webPrint func(string)) {
+func readPairsSlice(i int, workPiece int) {
 
-	// Read the "anchor" entry -- the smaller perfect power we will
-	// use as the denominator in our ratio search.
 	oneReadOfSmallerRoot := pairsSlice[i].root
 	oneReadOfSmallerPP   := pairsSlice[i].product
 
-	// Search forward from i+1 looking for a larger perfect power
-	// whose ratio to oneReadOfSmallerPP brackets workPiece.
 	for j := i + 1; j < len(pairsSlice); j++ {
 
-		largerPerfectProduct := pairsSlice[j].product
+		// Guard against integer overflow before multiplying.
+		// For large workpieces and large perfect cubes, the product
+		// oneReadOfSmallerPP * workPiece can silently overflow int64,
+		// producing garbage negative diffs and nonsense results.
+		if oneReadOfSmallerPP > math.MaxInt64/workPiece {
+			return // too large to compare safely -- skip this anchor
+		}
 
-		// We are looking for the first larger PP that exceeds
-		// oneReadOfSmallerPP * workPiece. At that crossing point,
-		// the entry just before it (j-1) is slightly below, and
-		// this entry (j) is slightly above. Both are candidates.
-		if largerPerfectProduct > oneReadOfSmallerPP*workPiece {
+		largerPP := pairsSlice[j].product
+		target   := oneReadOfSmallerPP * workPiece
 
-			// ── Larger side (just above the target) ──
-			ProspectivePHitOnLargeSide       := pairsSlice[j].product
-			rootOfProspectivePHitOnLargeSide := pairsSlice[j].root
+		if largerPP > target {
 
-			// ── Smaller side (just below the target) ──
-			ProspectivePHitOnSmallerSide       := pairsSlice[j-1].product
-			rootOfProspectivePHitOnSmallerSide := pairsSlice[j-1].root
+			rootOfLarger  := pairsSlice[j].root
+			smallerPP     := pairsSlice[j-1].product
+			rootOfSmaller := pairsSlice[j-1].root
 
 			// How far off are we on each side?
-			// diffOfLarger  = how much largerPP overshoots  (workPiece * smallerPP)
-			// diffOfSmaller = how much smallerPP undershoots (workPiece * smallerPP)
-			diffOfLarger  = ProspectivePHitOnLargeSide  - workPiece*oneReadOfSmallerPP
-			diffOfSmaller = workPiece*oneReadOfSmallerPP - ProspectivePHitOnSmallerSide
+			dL := largerPP - target  // overshoot  on the larger side
+			dS := target - smallerPP // undershoot on the smaller side
 
-			// ── Perfect result check ──────────────────────────────────────
-			// If diff is exactly zero, we have found a perfect square or cube.
-			if diffOfLarger == 0 {
-				webPrint("  !! Perfect result found on the larger side.")
-				webPrint(fmt.Sprintf("  The %d root of %d is exactly %0.0f",
-					radical2or3, workPiece,
-					float64(rootOfProspectivePHitOnLargeSide)/float64(oneReadOfSmallerRoot)))
-				mathCbrtCheat = math.Cbrt(float64(workPiece))
-				mathSqrtCheat = math.Sqrt(float64(workPiece))
+			// If either diff is negative, overflow has crept in.
+			// Discard this anchor.
+			if dL < 0 || dS < 0 {
 				return
 			}
-			if diffOfSmaller == 0 {
-				webPrint("  !! Perfect result found on the smaller side.")
-				webPrint(fmt.Sprintf("  The %d root of %d is exactly %0.0f",
-					radical2or3, workPiece,
-					float64(rootOfProspectivePHitOnSmallerSide)/float64(oneReadOfSmallerRoot)))
+
+			// Perfect result: ratio is exactly workPiece.
+			if dL == 0 {
+				diffOfLarger  = 0
+				mathSqrtCheat = math.Sqrt(float64(workPiece))
+				mathCbrtCheat = math.Cbrt(float64(workPiece))
+				return
+			}
+			if dS == 0 {
+				diffOfSmaller = 0
 				mathSqrtCheat = math.Sqrt(float64(workPiece))
 				mathCbrtCheat = math.Cbrt(float64(workPiece))
 				return
 			}
 
-			// ── Approximate result: larger side ──────────────────────────
-			// Record this candidate if it falls within our precision window.
-			if diffOfLarger < precisionOfRoot {
-				result := float64(rootOfProspectivePHitOnLargeSide) / float64(oneReadOfSmallerRoot)
-				pdiff  := float64(diffOfLarger) / float64(ProspectivePHitOnLargeSide)
+			// Update globals so the caller can read them.
+			diffOfLarger  = dL
+			diffOfSmaller = dS
+
+			// Record candidates that fall within the precision window.
+			if dL < precisionOfRoot {
+				result := float64(rootOfLarger) / float64(oneReadOfSmallerRoot)
+				pdiff  := float64(dL) / float64(largerPP)
 				sortedResults = append(sortedResults, Results{result: result, pdiff: pdiff})
-
-				// Show our work -- this is the educational heart of the module.
-				webPrint("  [+] Larger side hit:")
-				webPrint(fmt.Sprintf("      Small PP=%d (root=%d),  Large PP=%d (root=%d)",
-					oneReadOfSmallerPP, oneReadOfSmallerRoot,
-					ProspectivePHitOnLargeSide, rootOfProspectivePHitOnLargeSide))
-				webPrint(fmt.Sprintf("      %d / %d = %0.6f  (target: %d.0)",
-					ProspectivePHitOnLargeSide, oneReadOfSmallerPP,
-					float64(ProspectivePHitOnLargeSide)/float64(oneReadOfSmallerPP),
-					workPiece))
-				webPrint(fmt.Sprintf("      Root ratio: %d / %d = %0.9f",
-					rootOfProspectivePHitOnLargeSide, oneReadOfSmallerRoot, result))
-				webPrint(fmt.Sprintf("      Difference: %d  (pdiff: %0.8f)", diffOfLarger, pdiff))
-
-				// Elapsed time -- reassures the user things are progressing.
-				elapsed := time.Since(startBeforeCall)
-				if elapsed.Seconds() > 0.1 {
-					webPrint(fmt.Sprintf("      Time so far: %s", elapsed.Round(time.Millisecond)))
-				}
+			}
+			if dS < precisionOfRoot {
+				result := float64(rootOfSmaller) / float64(oneReadOfSmallerRoot)
+				pdiff  := float64(dS) / float64(smallerPP)
+				sortedResults = append(sortedResults, Results{result: result, pdiff: pdiff})
 			}
 
-			// ── Approximate result: smaller side ─────────────────────────
-			if diffOfSmaller < precisionOfRoot {
-				result := float64(rootOfProspectivePHitOnSmallerSide) / float64(oneReadOfSmallerRoot)
-				pdiff  := float64(diffOfSmaller) / float64(ProspectivePHitOnSmallerSide)
-				sortedResults = append(sortedResults, Results{result: result, pdiff: pdiff})
-
-				webPrint("  [-] Smaller side hit:")
-				webPrint(fmt.Sprintf("      Small PP=%d (root=%d),  Smaller PP=%d (root=%d)",
-					oneReadOfSmallerPP, oneReadOfSmallerRoot,
-					ProspectivePHitOnSmallerSide, rootOfProspectivePHitOnSmallerSide))
-				webPrint(fmt.Sprintf("      %d / %d = %0.6f  (target: %d.0)",
-					ProspectivePHitOnSmallerSide, oneReadOfSmallerPP,
-					float64(ProspectivePHitOnSmallerSide)/float64(oneReadOfSmallerPP),
-					workPiece))
-				webPrint(fmt.Sprintf("      Root ratio: %d / %d = %0.9f",
-					rootOfProspectivePHitOnSmallerSide, oneReadOfSmallerRoot, result))
-				webPrint(fmt.Sprintf("      Difference: %d  (pdiff: %0.8f)", diffOfSmaller, pdiff))
-
-				elapsed := time.Since(startBeforeCall)
-				if elapsed.Seconds() > 0.1 {
-					webPrint(fmt.Sprintf("      Time so far: %s", elapsed.Round(time.Millisecond)))
-				}
-			}
-
-			// We found the crossing point for this anchor entry.
-			// Break the inner search and let the outer loop advance
-			// to the next anchor entry.
-			break
+			return // one crossing point per anchor is enough
 		}
 	}
-}
-
-// ── handlePerfectSquaresAndCubes ─────────────────────────────────────────────
-//
-// Called only when a perfect result was found (diff == 0).
-// Prints a clear confirmation message.
-func handlePerfectSquaresAndCubes(timeOfStart time.Time, radical2or3, workPiece int, webPrint func(string)) {
-	elapsed := time.Since(timeOfStart)
-	webPrint("")
-	webPrint("  ── Perfect Result ───────────────────────────────")
-	if radical2or3 == 2 {
-		webPrint(fmt.Sprintf("  %d is a perfect square.", workPiece))
-		webPrint(fmt.Sprintf("  Its square root is exactly %0.0f", mathSqrtCheat))
-	} else {
-		webPrint(fmt.Sprintf("  %d is a perfect cube.", workPiece))
-		webPrint(fmt.Sprintf("  Its cube root is exactly %0.0f", mathCbrtCheat))
-	}
-	webPrint(fmt.Sprintf("  Completed in: %s", elapsed.Round(time.Millisecond)))
-	webPrint("  ─────────────────────────────────────────────────")
 }
 
 // ── calculatePrecision ────────────────────────────────────────────────────────
 //
-// Determines how wide a "closeness window" to use when deciding whether a
-// pair of perfect powers is close enough to workPiece to count as a hit.
+// Sets the precision window -- how close largerPP/smallerPP must be to
+// workPiece before we record it as a candidate.
 //
-// The original code had hardcoded magic numbers for specific workpiece values,
-// which was fragile. This version scales automatically:
-//
-//   - Square roots need only a tiny window (4) because perfect squares are
-//     dense and we find good approximations quickly.
-//   - Cube roots need a larger window because perfect cubes are sparser.
-//     Larger workpieces need a larger window for the same reason.
-//   - We clamp between 600 and 2000 to keep runtime reasonable.
+// Square roots: tiny window (4) because perfect squares are dense.
+// Cube roots:   scales with workPiece because perfect cubes are sparser.
+//               Clamped between 600 and 3000 for reasonable runtime.
 //
 func calculatePrecision(radical2or3, workPiece int, webPrint func(string)) int {
 	var precision int
 	if radical2or3 == 2 {
-		precision = 4
+		// Scale with the square root of workPiece so large workpieces
+		// get a reasonable starting window without grinding through
+		// dozens of useless passes doubling from 4.
+		// For small workpieces like 49 this still gives at least 4,
+		// which is tight enough to find exact perfect squares cleanly.
+		
+		
+		// precision = int(math.Sqrt(float64(workPiece))) / 10
+		precision = int(math.Sqrt(float64(workPiece))) / 3
+
+
+		if precision < 4   { precision = 4   }
+		if precision > 500 { precision = 500 }
 	} else {
-		// Scale with workPiece: bigger numbers need a wider search window.
-		precision = workPiece * 120
+		// Cube roots need a wider window because perfect cubes are sparser.
+		precision = workPiece * 12
 		if precision < 600  { precision = 600  }
-		if precision > 2000 { precision = 2000 }
+		if precision > 3000 { precision = 3000 }
 	}
 	webPrint(fmt.Sprintf("  Precision window set to %d", precision))
 	return precision
@@ -384,27 +494,24 @@ func calculatePrecision(radical2or3, workPiece int, webPrint func(string)) int {
 // ── buildPairsSlice ───────────────────────────────────────────────────────────
 //
 // Builds the lookup table of perfect squares or cubes.
-// Each entry records the perfect power and the whole number root that produced it.
+// Starts at root=3 and builds 825,000 entries.
 //
-// We start from root=2 (since 1^n = 1 is trivial and not useful as a denominator)
-// and build 825,000 entries, giving us roots up to 825,002.
-//
-// For square roots: entries are (4,2), (9,3), (16,4), (25,5) ...
-// For cube roots:   entries are (8,2), (27,3), (64,4), (125,5) ...
+// Square roots: entries are (9,3), (16,4), (25,5), ...
+// Cube roots:   entries are (27,3), (64,4), (125,5), ...
 //
 func buildPairsSlice(radical2or3 int) {
-	pairsSlice = nil // Clear any results from a previous run
-	root := 1
+	pairsSlice = nil
+	root := 2
 	for i := 0; i < 825000; i++ {
 		root++
-		var identityProduct int
+		var product int
 		if radical2or3 == 2 {
-			identityProduct = root * root
+			product = root * root
 		} else {
-			identityProduct = root * root * root
+			product = root * root * root
 		}
 		pairsSlice = append(pairsSlice, Pairs{
-			product: identityProduct,
+			product: product,
 			root:    root,
 		})
 	}

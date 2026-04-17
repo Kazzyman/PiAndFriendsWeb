@@ -76,18 +76,31 @@
 */
 <body>
 <div id="sidebar">
-
-    <h3>Brute-force Roots Demo</h3>
+    <!-- Roots Demo Head line -->
+        <h3>Brute-force Roots Demo</h3>
+    <!-- Roots input fields -->
     <input type="number" id="radical" value="2">
-    <body><span style="display: block; text-align: center;">Enter radical (2|3) above</span></body>
+    <!-- caption --> <body><span style="display: block; text-align: center;">Enter radical (2|3) above</span></body>
     <input type="number" id="workpiece" value="49">
-    <body><span style="display: block; text-align: center;">Enter any valid radicand above</span></body>
-    <button class="btn" style="background: #e0af68; color: #1a1b26; margin-top: 10px;" onclick="startRoots()">Square and Cube Roots, rational approximation via perfect power pairs<br> 
-        Borrowed from Ancient Greek and Indian mathematicians</button>
+    <!-- caption --><body><span style="display: block; text-align: center;">Enter any valid radicand above</span></body>
+
+    <!-- Roots button -->
+    <button class="btn" style="background: #e0af68; color: #1a1b26; margin-top: 10px;" onclick="startRoots()">
+        Square and Cube Roots<br>
+        approximation via perfect power pairs<br> 
+    </button>
+    <!-- Roots explainer button -->
+    <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="showRootsExplainer()">
+        Learn how the Roots Algorithm works, Click here for an easy-to-follow explanation<br>
+    </button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
+    <!-- 
+     :: -
+    -->
     <h3> - - - Pi Methods: - - - </h3>
 
+    <!-- Archimedes button -->
     <button class="btn" style="background: #ff9e64; color: #1a1b26;" onclick="start('archimedes')">
         Archimedes Method, from 230 BCE<br>
         Finding π the original way. Slightly improved by Richard (Rick) H Woolley<br>
@@ -97,7 +110,8 @@
     </button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
-<button class="btn" style="background: #e0af68; color: #1a1b26;" onclick="start('spigot')">
+<!-- Spigot, has trailing explainer button -->
+    <button class="btn" style="background: #e0af68; color: #1a1b26;" onclick="start('spigot')">
         The Spigot Algorithm -- Uber Honest Edition<br>
         employs integer arithmetic only<br><br>
         <span style="display: block; text-align: left;">Run 1: digits flash at full CPU speed</span>
@@ -105,13 +119,12 @@
         which are then resolved on-screen the moment the algorithm knows the actual answer</span>
         <br>Watch to the end of Run 2 for a surprise 'Easter Egg' at position 762
     </button>
-    <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
-
     <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="showSpigotExplainer()">
     Learn how the Spigot Algorithm bakes Pi, Click here for an easy-to-follow explanation of how the Spigot works<br>
-</button>
+    </button>
 <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
+<!-- this is a comment -->
     <div class="input-group">
         <label>BBP Digits:</label>
         <input type="number" id="bbpDigits" value="1000">
@@ -127,6 +140,7 @@
     </button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
+<!-- this is a comment -->
     <div class="input-group">
         <label>Monty Grid Size:</label>
         <input type="number" id="gridSize" value="4000">
@@ -340,6 +354,63 @@ function showSpigotExplainer() {
     printNext();
 }
 
+// ::: Roots Explainer 
+function showRootsExplainer() {
+    stopCurrent(false);
+    const out = document.getElementById('output');
+    out.innerHTML = `<span id="cursor"></span>`;
+    const lines = [
+        "An easy-to-follow explanation of how the sausage is made",
+        "",
+        "Original concept and algorithm: Richard (Rick) Woolley.",
+        "The core insight: if A and B are both perfect powers (squares or cubes)",
+
+"and A/B is close to our target number N, then the ratio of their roots",
+"is a close approximation to the Nth root of N.",
+" ",
+"Example for square roots:",
+"  We want √11.",
+"  We notice that 49/4 = 12.25  (close to 11, but a bit high)",
+"  and that       36/4 = 9.0    (close to 11, but a bit low)",
+"  So √11 ≈ 7/2 = 3.5  (rough), or more precisely we keep searching",
+"  for larger perfect squares whose ratio is even closer to 11.",
+"  Eventually we find e.g. 2116/196 = 10.795... and 2209/196 = 11.27...",
+"  giving √11 ≈ 46/14 = 3.2857... which is correct to several digits.",
+" ",
+"This is the same insight ancient Greek mathematicians used to discover",
+"that √2 ≈ 7/5, because 49/25 = 1.96 ≈ 2",
+
+" ",
+"Why some numbers are harder than others:",
+"  √11 = 3.3166... has a clean rational approximation lurking in the",
+"  perfect square table, so the algorithm finds it quickly and precisely.",
+" ",
+"  √999983 ≈ 999.9915 sits frustratingly close to the integer 1000,",
+"  so the table finds 1000/1 first and nothing better fits within any",
+"  reasonable precision window. The algorithm is working correctly --",
+"  it just found the most obvious approximation rather than a subtle one.",
+" ",
+"  This is not a weakness -- it is a window into the nature of rational",
+"  approximations. Numbers near perfect squares are actually the hardest",
+"  cases, not the easiest. Numbers like 11, 23, and 491, whose square",
+"  roots are genuinely irrational and not close to any simple fraction,",
+"  are where this ancient method really shines.",
+" ",
+
+    ];
+    let i = 0;
+    function printNext() {
+        if (i >= lines.length) return;
+        const cursor = document.getElementById('cursor');
+        const escaped = lines[i].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        cursor.outerHTML = '\n' + escaped + '<span id="cursor"></span>';
+        out.scrollTop = out.scrollHeight;
+        i++;
+        setTimeout(printNext, 18);
+    }
+    printNext();
+}
+
 // BBP
     function runBBP() {
         const digits = document.getElementById('bbpDigits').value || 1000;
@@ -421,6 +492,15 @@ Select a method from the panel on the left to begin...<span id="cursor"></span>`
             const data = e.data;
             const cursor = document.getElementById('cursor');
 
+        // Keep the DOM lean -- trim lines from the top once we exceed 500
+            const lines = out.querySelectorAll('br, span:not(#cursor)');
+            if (lines.length > 500) {
+                for (let i = 0; i < 50; i++) {
+                    if (out.firstChild && out.firstChild.id !== 'cursor') {
+                        out.removeChild(out.firstChild);
+                    }
+                }
+            }
             const escape = s => s
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')

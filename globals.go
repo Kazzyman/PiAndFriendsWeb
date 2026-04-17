@@ -27,7 +27,7 @@ var t2 time.Time
 
 // The following globals, are used in multiple funcs of case 18: calculate either square or cube root of any integer
 var Tim_win float64             // Time Window
-var sortedResults = []Results{} // sortedResults is an array of type Results as defined at the top of this file
+// var sortedResults = []Results{} // sortedResults is an array of type Results as defined at the top of this file
 var diffOfLarger int
 var diffOfSmaller int
 var precisionOfRoot int    // this being global means we do not need to pass it in to the read func
@@ -35,8 +35,3 @@ var precisionOfRoot int    // this being global means we do not need to pass it 
 const colorReset = "\033[0m"
 const colorGreen = "\033[32m"
 const colorCyan = "\033[36m"
-
-type Results struct { // define a new structure called Results with two fields; result, and pdiff ::: - -
-	result float64
-	pdiff  float64
-}
