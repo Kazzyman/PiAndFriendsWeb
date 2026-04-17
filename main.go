@@ -132,9 +132,9 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 			n1, err1 := strconv.Atoi(n1Str)
 			n2, err2 := strconv.Atoi(n2Str)
 			if err1 != nil || n1 < 100  { n1 = 5000  }
-			if err2 != nil || n2 < 100  { n2 = 15000 }
-			if n1 > 10000 { n1 = 10000 }
-			if n2 > 50000 { n2 = 50000 }
+			if err2 != nil || n2 < 100 { n2 = 1000000 }
+			if n1 > 10000  { n1 = 10000  }
+			if n2 > 2000000 { n2 = 2000000 }
 			nifty_scoreBoardWeb(n1, n2, done, func(s string) {
 				outputChan <- s
 			})
