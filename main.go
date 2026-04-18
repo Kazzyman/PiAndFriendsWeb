@@ -43,6 +43,15 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 	// This must be inside the go func() where outputChan was defined
 	go func() {
 		switch method { // ::: These cases are where the association is made to webPrint.
+		case "roots":
+			runRootsWeb(r.URL.Query(), func(s string) {
+				outputChan <- s
+			})
+		case "eulers":
+			// Here, we create an 'anonymous' function on the fly. Anything ArchimedesBig sends to 's' gets thrown onto the channel.
+			EulersNumber(done, func(s string) {
+				outputChan <- s
+			})
 		case "archimedes":
 			// Here, we create an 'anonymous' function on the fly. Anything ArchimedesBig sends to 's' gets thrown onto the channel.
 			ArchimedesBig(done, func(s string) {
@@ -61,10 +70,7 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 			MonteCarloWeb(gridSize, func(s string) {
 				outputChan <- s
 			})
-		case "roots":
-			runRootsWeb(r.URL.Query(), func(s string) {
-				outputChan <- s
-			})
+
 		case "bbp":
 			digitsStr := r.URL.Query().Get("digits")
 			digits, err := strconv.Atoi(digitsStr)

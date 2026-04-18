@@ -122,24 +122,15 @@
 -->
 <body>
 <div id="sidebar">
-    <!-- Roots Demo Head line -->
-        <h3>Brute-force Roots Demo</h3>
-    <!-- Roots input fields -->
-    <input type="number" id="radical" value="2">
-    <!-- caption --> <span style="display: block; text-align: center;">Enter radical (2|3) above</span>
-    <input type="number" id="workpiece" value="49">
-    <!-- caption --><span style="display: block; text-align: center;">Enter any valid radicand above</span>
+    <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="copyOutput()">
+        Copy Output to Clipboard
+    </button>
 
-    <!-- Roots button -->
-    <button class="btn" style="background: #e0af68; color: #1a1b26; margin-top: 10px;" onclick="startRoots()">
-        Square and Cube Roots<br>
-        approximation via perfect power pairs<br> 
+    <button class="btn" style="background: #f7768e; color: white;" onclick="stopCurrent(false)">
+        Stop/Clear Calculation
     </button>
-    <!-- Roots explainer button -->
-    <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="showRootsExplainer()">
-        Learn how the Roots Algorithm works, Click here for an easy-to-follow explanation<br>
-    </button>
-    <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
+
+        <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
     <!-- 
      :: -
@@ -278,7 +269,7 @@
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
     <button class="btn" style="background: #ff9e64; color: #1a1b26;" onclick="start('wallis')">
-        Wallis<br>
+        long-running Wallis method for Pi<br>
         Up to 40 Billion iterations<br>
         only 9 or 10 digits of pi<br>
         π = 2 * ((2/1)*(2/3)) * ((4/3)*(4/5)) * ((6/5)*(6/7)) ...
@@ -286,13 +277,36 @@
     </button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
-    <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="copyOutput()">
-        Copy Output to Clipboard
-    </button>
 
-    <button class="btn" style="background: #f7768e; color: white;" onclick="stopCurrent(false)">
-        Stop/Clear Calculation
+    <!-- Roots Demo Head line -->
+        <h3>Brute-force Roots Demo</h3>
+    <!-- Roots input fields -->
+    <input type="number" id="radical" value="2">
+    <!-- caption --> <span style="display: block; text-align: center;">Enter radical (2|3) above</span>
+    <input type="number" id="workpiece" value="49">
+    <!-- caption --><span style="display: block; text-align: center;">Enter any valid radicand above</span>
+
+    <!-- Roots button -->
+    <button class="btn" style="background: #e0af68; color: #1a1b26; margin-top: 10px;" onclick="startRoots()">
+        Square and Cube Roots demo<br>
+        approximation via perfect power pairs<br> 
     </button>
+    <!-- Roots explainer button -->
+    <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="showRootsExplainer()">
+        Learn how the Roots Algorithm works, Click here for an easy-to-follow explanation<br>
+    </button>
+    <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
+
+
+   <button class="btn" style="background: #ff9e64; color: #1a1b26;" onclick="start('eulers')">
+       Euler's Number<br>
+        Bernoulli noticed that this sequence approaches a limit<br>
+        (the force of interest) with larger n and, thus, smaller<br>
+        compounding intervals. Compounding weekly (n = 52) yields<br> 
+        $2.692596..., while compounding daily (n = 365) yields $2.714567...
+    </button>
+    
+
 </div>
 
 <button id="toggleSidebar" onclick="toggleSide()" style="
