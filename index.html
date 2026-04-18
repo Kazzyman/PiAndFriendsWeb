@@ -633,8 +633,13 @@ Select a method from the panel on the left to begin...<span id="cursor"></span>`
                     (cursor.innerHTML ? cursor.innerHTML : '') +
                     '\n<span style="color:' + hex + '">' + text + '</span>' +
                     '<span id="cursor"></span>';
+                } else if (data.startsWith("LARGE:")) {
+                    cursor.outerHTML =
+                        (cursor.innerHTML ? cursor.innerHTML : '') +
+                        '\n<span style="font-size:20px">' + escape(data.slice(6)) + '</span>' +
+                        '<span id="cursor"></span>';
 
-            } else {
+                } else {
                 cursor.outerHTML =
                     (cursor.innerHTML ? cursor.innerHTML : '') +
                     '\n' + escape(data) +
