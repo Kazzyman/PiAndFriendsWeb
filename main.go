@@ -48,8 +48,11 @@ func handleCalculation(w http.ResponseWriter, r *http.Request) {
 				outputChan <- s
 			})
 		case "eulers":
-			// Here, we create an 'anonymous' function on the fly. Anything ArchimedesBig sends to 's' gets thrown onto the channel.
 			EulersNumber(done, func(s string) {
+				outputChan <- s
+			})
+		case "erdos":
+			ErdosBorwein(done, func(s string) {
 				outputChan <- s
 			})
 		case "archimedes":
