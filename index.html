@@ -220,6 +220,9 @@
         This algorithm is a rapidly converging infinite series which
         leverages properties of j-invariant from elliptic function theory
     </button>
+    <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="showChudExplainer()">
+        Learn how this Algorithm achieved the worlds record for maximum digits of Pi<br>
+    </button>
         <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="copyOutput()">
         Copy Output to Clipboard
     </button>
@@ -545,6 +548,60 @@ function showSpigotExplainer() {
     }
     printNext();
 }
+
+function showChudExplainer() {
+    stopCurrent(false);
+    const out = document.getElementById('output');
+    out.innerHTML = `<span id="cursor"></span>`;
+    const lines = [
+"── The current world record for digits of π ──",
+"",
+"As of November 2025, the record is 314 trillion",
+"digits, set by the team at StorageReview.",
+"",
+"The machine: a single Dell PowerEdge R7725",
+"server, equipped with two AMD EPYC processors",
+"(192 cores total), 1.5 terabytes of DDR5 RAM,",
+"and 40 high-capacity NVMe solid-state drives.",
+"34 of those drives ran the calculation. The",
+"total storage amounted to roughly a petabyte.",
+"",
+"The software: y-cruncher, an open-source",
+"multi-threaded pi benchmark program.",
+"",
+"The algorithm: Chudnovsky -- the same one",
+"implemented right here in this suite.",
+"",
+"The runtime: approximately 110 days of",
+"continuous computation, with zero downtime.",
+"",
+"The previous record of 300 trillion digits was",
+"set in April 2025 by Linus Media Group and",
+"Kioxia using a much larger storage cluster",
+"that ran for over 226 days.",
+"",
+"StorageReview's team noted that at this scale",
+"the limiting factor is no longer the CPU --",
+"it is the speed and capacity of the storage.",
+"Every intermediate result must be written and",
+"read back from disk billions of times.",
+"",
+"The 314 trillionth digit of π, if you were",
+"wondering, is 5.",
+   ];
+    let i = 0;
+    function printNext() {
+        if (i >= lines.length) return;
+        const cursor = document.getElementById('cursor');
+        const escaped = lines[i].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        cursor.outerHTML = '\n' + escaped + '<span id="cursor"></span>';
+        out.scrollTop = out.scrollHeight;
+        i++;
+        setTimeout(printNext, 18);
+    }
+    printNext();
+}
+
 
 function showBBPExplainer() {
     stopCurrent(false);
