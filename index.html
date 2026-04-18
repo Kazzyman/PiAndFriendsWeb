@@ -279,7 +279,7 @@
 
 
     <!-- Roots Demo Head line -->
-        <h3>Brute-force Roots Demo</h3>
+        <h3>Brute-Force Roots Demo</h3>
     <!-- Roots input fields -->
     <input type="number" id="radical" value="2">
     <!-- caption --> <span style="display: block; text-align: center;">Enter radical (2|3) above</span>
@@ -297,14 +297,14 @@
     </button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
-
+<h3>More Math Constants, and Persons</h3>
 
 
    <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="erdosText()">
-    Learn how the Spigot Algorithm bakes Pi, Click here for an easy-to-follow explanation of how the Spigot works<br>
+    Bio of Erdős, Pi link, and Borwein<br>
     </button>
     <button class="btn" style="background: #ff9e64; color: #1a1b26;" onclick="start('erdos')">
-       everything Erdős & the Erdős–Borwein constant<br>
+       Calculating the Erdős–Borwein constant<br>
     </button>
         <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
@@ -521,7 +521,7 @@ function erdosText() {
     const lines = [
 "The Erdős–Borwein constant is the sum of the reciprocals of the Mersenne numbers.",
 "It is named after Paul Erdős and Peter Borwein.",
-
+"",
 "Paul Erdős was a Hungarian mathematician. He was one of the most prolific mathematicians ",
 "and producers of mathematical conjectures of the 20th century. Erdős pursued and proposed ",
 "problems in discrete mathematics, graph theory, number theory, mathematical analysis, ",
@@ -530,7 +530,7 @@ function erdosText() {
 "He championed and contributed to Ramsey theory, which studies the conditions in which ",
 "order necessarily appears. Overall, his work leaned towards solving previously open ",
 "problems, rather than developing or exploring new areas of mathematics.",
-
+"",
 "Erdős published around 1,500 mathematical papers during his lifetime, a figure that",
 "remains unsurpassed. He firmly believed mathematics to be a social activity, ",
 "living an itinerant lifestyle with the sole purpose of writing mathematical papers ",
@@ -541,30 +541,29 @@ function erdosText() {
 "problem at a conference in Warsaw. Erdős's prolific output with co-authors prompted ",
 "the creation of the Erdős number, the number of steps in the shortest path between a ",
 "mathematician and Erdős in terms of co-authorships. ",
-
-
+"",
+"",
 "Peter Benjamin Borwein (born St. Andrews, Scotland, May 10, 1953 – 23 August 2020) ",
 "was a Canadian mathematician and a professor at Simon Fraser University. He is known ",
 "as a co-author of the paper which presented the Bailey–Borwein–Plouffe algorithm ",
 "(discovered by Simon Plouffe) for computing π. ",
-
+"",
 "Borwein was born into a Jewish family. He became interested in number theory and classical ",
 "analysis during his second year of university. He had not previously been interested in ",
 "math, although his father was the head of the University of Western Ontario's mathematics ",
 "department and his mother is associate dean of medicine there. Borwein and his two siblings ",
 "majored in mathematics. ",
-
+"",
 "After completing a Bachelor of Science in Honours Math at the University of Western ",
 "Ontario in 1974, he went on to complete an MSc and Ph.D. at the University of British  ",
 "Columbia. He joined the Department of Mathematics at Dalhousie University. While he ",
 "was there, he, his brother Jonathan Borwein and David H. Bailey of NASA wrote the 1989 ",
 "paper that outlined and popularized a proof for computing one billion digits of π. ",
 "The authors won the 1993 Chauvenet Prize and Merten M. Hasse Prize for this paper.",
-
+"",
 "In 1993, he moved to Simon Fraser University, joining his brother Jonathan in establishing ",
 "the Centre for Experimental and Constructive Mathematics (CECM) where he developed the ",
 "Inverse Symbolic Calculator. ",
-
     ];
     let i = 0;
     function printNext() {
