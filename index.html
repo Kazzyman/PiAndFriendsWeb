@@ -160,7 +160,7 @@
     </button>
     <hr style="border: 0; border-top: 1px solid #414868; margin: 20px 0;">
 
-    <!-- Bailey–Borwein–Plouffe (BBP) -->
+    <!-- BBP -- Bailey–Borwein–Plouffe (BBP) -->
     <div class="input-group">
         <label>BBP Digits:</label>
         <input type="number" id="bbpDigits" value="1000">
@@ -173,6 +173,10 @@
             &pi; = &sum; <span class="sub-sup"><sup>&infin;</sup><sub>k=0</sub></span>
             [ 1/16<sup>k</sup> ( 4/8k+1 - 2/8k+4 - 1/8k+5 - 1/8k+6 ) ]
         </div>
+    </button>
+    <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="showBBPExplainer()">
+        The proof: why this formula is guaranteed<br>
+        to produce correct digits of π — forever<br>
     </button>
     <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="copyOutput()">
         Copy Output to Clipboard
@@ -541,6 +545,88 @@ function showSpigotExplainer() {
     }
     printNext();
 }
+
+function showBBPExplainer() {
+    stopCurrent(false);
+    const out = document.getElementById('output');
+    out.innerHTML = `<span id="cursor"></span>`;
+    const lines = [
+        "── How do mathematicians know an infinite series",
+        "   really converges to π? ──",
+        "",
+        "With Archimedes, it is obvious. You can draw the",
+        "polygon. You can see it approaching the circle.",
+        "The geometry is right there in front of you.",
+        "",
+        "With Monte Carlo, it is almost as clear. Darts,",
+        "a circle, a square. Anyone can follow the logic.",
+        "",
+        "But what about a formula like BBP, which says",
+        "that summing an infinite series of fractions",
+        "involving powers of 16 somehow produces π?",
+        "How could anyone know that is true?",
+        "",
+        "── The answer is proof ──",
+        "",
+        "Mathematicians do not trust a formula because it",
+        "produces correct-looking digits. They prove it.",
+        "A mathematical proof is a watertight logical",
+        "argument — if the premises are true and every",
+        "step follows, the conclusion must be true.",
+        "No exceptions. No edge cases. No 'probably'.",
+        "",
+        "The BBP formula was not discovered by insight.",
+        "It was found in 1995 by a computer program that",
+        "searched for integer relationships between known",
+        "constants. When Simon Plouffe found it, the",
+        "formula was then proved using calculus —",
+        "specifically, a technique called integration of",
+        "a carefully chosen rational function.",
+        "",
+        "── What the proof guarantees ──",
+        "",
+        "Once proved, the formula is known to be exactly",
+        "correct — not approximately, not probably, but",
+        "with the same certainty as 2 + 2 = 4. Every",
+        "digit it produces is provably a digit of π.",
+        "",
+        "This is what separates mathematics from science.",
+        "In science, a theory is accepted when experiments",
+        "support it. In mathematics, a theorem is true",
+        "when it is proved — and then it is true forever,",
+        "regardless of what any computer calculates.",
+        "",
+        "── The really astonishing part ──",
+        "",
+        "BBP does not just compute π sequentially from",
+        "the first digit. It can compute any individual",
+        "hexadecimal digit of π — say, the trillionth —",
+        "without knowing any of the digits before it.",
+        "No other formula for π can do this.",
+        "",
+        "That property also follows directly from the",
+        "proof. The same argument that shows the formula",
+        "equals π also shows why individual digits can",
+        "be extracted independently.",
+        "",
+        "So when you run BBP here and see thousands of",
+        "correct digits appear, you are not watching a",
+        "lucky coincidence. You are watching a proved",
+        "theorem execute.",
+    ];
+    let i = 0;
+    function printNext() {
+        if (i >= lines.length) return;
+        const cursor = document.getElementById('cursor');
+        const escaped = lines[i].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        cursor.outerHTML = '\n' + escaped + '<span id="cursor"></span>';
+        out.scrollTop = out.scrollHeight;
+        i++;
+        setTimeout(printNext, 18);
+    }
+    printNext();
+}
+
 
 // ::: Roots Explainer 
 function showRootsExplainer() {
