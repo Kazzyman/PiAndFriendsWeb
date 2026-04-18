@@ -193,6 +193,9 @@
         Flavor: no fancy equations are used, only Go's pure randomness, 4 digits of pi in 21s; 7 digits possible in 1h30m with a 119k grid
         <br>-*-*- Rick's second-favorite method -*-*-
     </button>
+    <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="showMonteExplainer()">
+        Learn how the Monte Carlo Algorithm bakes Pi, Click here for an easy-to-follow explanation of how Monte works<br>
+    </button>
     <button class="btn" style="background: #414868; color: #a9b1d6;" onclick="copyOutput()">
         Copy Output to Clipboard
     </button>
@@ -608,6 +611,79 @@ function showRootsExplainer() {
     }
     printNext();
 }
+
+// ::: Mote Carlo Explainer 
+function showMonteExplainer() {
+    stopCurrent(false);
+    const out = document.getElementById('output');
+    out.innerHTML = `<span id="cursor"></span>`;
+    const lines = [
+        "── The Monte Carlo Method ──",
+        "",
+        "Imagine throwing darts randomly at a square board",
+        "that has a circle drawn inside it, touching all",
+        "four sides. If you throw enough darts, the ratio",
+        "of darts landing inside the circle to the total",
+        "number thrown will converge toward π/4.",
+        "",
+        "Why? Because the area of the circle is π×r² and",
+        "the area of the square is (2r)² = 4r². So the",
+        "ratio of circle area to square area is exactly",
+        "π/4. Random darts sample that ratio naturally.",
+        "",
+        "── How the code does it ──",
+        "",
+        "Instead of darts, we generate pairs of random",
+        "numbers (x, y), each between 0 and 1. These are",
+        "coordinates of a point in a unit square. We then",
+        "check whether the point falls inside the unit",
+        "circle using the Pythagorean theorem:",
+        "",
+        "  if x² + y² ≤ 1, the point is inside.",
+        "",
+        "After millions of trials, we calculate:",
+        "",
+        "  π ≈ 4 × (points inside / total points)",
+        "",
+        "── Why is it slow? ──",
+        "",
+        "Randomness is brutally inefficient for computing",
+        "π. Each additional correct digit requires roughly",
+        "100 times more dart throws. Four digits in 21",
+        "seconds, seven digits in ninety minutes. Compare",
+        "that to Chudnovsky, which gets thousands of",
+        "digits in the same time.",
+        "",
+        "── Why do it at all? ──",
+        "",
+        "Because it is beautiful. No equations, no series,",
+        "no clever algebra. Just pure randomness, applied",
+        "repeatedly, converging on one of the most profound",
+        "constants in all of mathematics. It is a profound",
+        "demonstration that order can emerge from chaos.",
+        "",
+        "── Rick's second favorite for a reason ──",
+        "",
+        "The Monte Carlo method was pioneered during the",
+        "Manhattan Project in the 1940s by Stanislaw Ulam",
+        "and John von Neumann. They named it after the",
+        "famous casino in Monaco — because at its heart,",
+        "it is a game of chance.",
+    ];
+    let i = 0;
+    function printNext() {
+        if (i >= lines.length) return;
+        const cursor = document.getElementById('cursor');
+        const escaped = lines[i].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        cursor.outerHTML = '\n' + escaped + '<span id="cursor"></span>';
+        out.scrollTop = out.scrollHeight;
+        i++;
+        setTimeout(printNext, 18);
+    }
+    printNext();
+}
+
+
 
 function erdosText() {
     stopCurrent(false);
